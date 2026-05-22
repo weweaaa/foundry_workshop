@@ -1,0 +1,22 @@
+defaultEnvironment: dev
+
+environments:
+  dev:
+    projectEndpoint: ${AZURE_AI_PROJECT_ENDPOINT}
+    agents:
+      - name: ${AGENT_NAME}
+        personaFile: personas/research-agent.md
+        version: 1.0.0
+
+    # Phase 3 batch evaluation 占位 — 本 workshop 不跑，留作扩展。
+    testCases:
+      - id: smoke-research
+        priority: P0
+        agent: ${AGENT_NAME}
+        dataset: research-agent-eval-seed
+        datasetVersion: v1
+        datasetFile: .foundry/datasets/research-agent-eval-seed-v1.jsonl
+        evaluators:
+          - { name: relevance, threshold: 4 }
+          - { name: groundedness, threshold: 4 }
+

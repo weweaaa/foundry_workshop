@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/ContainerAgent.yaml
+kind: hosted
+name: research-agent
+description: 市场/竞品研究助手 — web search + fetch + 结构化报告。
+protocols:
+  - protocol: responses
+    version: 1.0.0
+resources:
+  cpu: '1'
+  memory: '2Gi'
+environment_variables:
+  - name: AZURE_AI_PROJECT_ENDPOINT
+    value: ${AZURE_AI_PROJECT_ENDPOINT}
+  - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
+    value: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+  - name: STUDENT_SUFFIX
+    value: ${STUDENT_SUFFIX}
+  - name: OTEL_GENAI_CAPTURE_MESSAGE_CONTENT
+    value: 'false'

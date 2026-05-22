@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Workshop Observability · Foundry Operational Metrics</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<!-- Data file written by fetch-traces.ps1. Loaded as a <script> instead of via fetch()
+     so that file:// works without a local HTTP server (no CORS). -->
+<script src="data/my-metrics.js" onerror="window.__METRICS_MISSING__ = true"></script>
+<style>
+  :root {
+    --bg: #0f1115; --fg: #e6e6e6; --muted: #8a8f99; --panel: #161a22;
+    --accent: #66c2a5; --danger: #fc8d62; --warn: #ffd166; --user: #4a90e2;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--fg); }
+  header { padding: 14px 24px; background: var(--panel); border-bottom: 1px solid #2a2f3a; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 17px; }
+  header .badge { background: #2a2f3a; color: var(--muted); padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  header .grow { flex: 1; }
+  header button { background: var(--panel); color: var(--fg); border: 1px solid #2a2f3a; padding: 6px 12px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+  header button:hover { border-color: var(--accent); }
+  main { padding: 20px 24px; max-width: 1400px; margin: 0 auto; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--panel); padding: 14px 16px; border-radius: 8px; border: 1px solid #2a2f3a; }
+  .kpi .label { color: var(--muted); font-size: 12px; }
+  .kpi .value { font-size: 26px; margin-top: 4px; font-weight: 600; }
+  .kpi .sub { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+  .chart { background: var(--panel); border-radius: 8px; border: 1px solid #2a2f3a; padding: 12px 14px; margin-bottom: 12px; }
+  .chart h2 { margin: 0 0 6px 4px; font-size: 13px; color: var(--muted); font-weight: 500; }
+  .chart .desc { color: var(--muted); font-size: 11px; margin: 0 4px 8px; }
+  footer { padding: 14px 24px; color: var(--muted); font-size: 11px; text-align: center; }
+  code.inline { background: rgba(102,194,165,0.12); color: var(--accent); padding: 1px 5px; border-radius: 3px; font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+  #empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  #empty-state code { background: rgba(102,194,165,0.12); color: var(--accent); padding: 2px 6px; border-radius: 3px; font-family: ui-monospace, Consolas, monospace; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📊 Foundry Operational Metrics · Local Dashboard</h1>
+  <span class="badge" id="meta-agent">agent=?</span>
+  <span class="badge" id="meta-window">window=? min</span>
+  <span class="badge" id="meta-gen">generated=?</span>
+  <span class="grow"></span>
+  <button id="reload-btn">刷新</button>
+</header>
+
+<main id="app">
+  <div id="empty-state" style="display:none">
+    <h2 style="color: var(--warn)">没有 data/my-metrics.js</h2>
+    <p>先在 Lab-2-vibe-coding 跑几条对话, 然后:</p>
+    <pre><code>cd Lab-2-vibe-coding
+..\scripts\invoke-hosted.ps1 -Prompt "..."           # 任意 prompt, emit AgentResponses
+..\Lab-4-observability\fetch-traces.ps1 -Minutes 60  # 拉 Monitor metrics → my-metrics.js
+# 再刷新本页面 (按右上 刷新 按钮 或 F5)</code></pre>
+    <p style="font-size: 11px; margin-top: 16px">注: Azure Monitor 约 1-2 min 摄入延迟, 调用刚发完先等一下再 fetch-traces。</p>
+  </div>
+
+  <div id="dashboard">
+    <div class="kpis" id="kpi-cards"></div>
+
+    <div class="chart">
+      <h2>我的 Agent Responses · 时间序列</h2>
+      <div class="desc">指标: <code class="inline">AgentResponses</code> · 过滤 AgentId=我的 · 来源: Foundry Monitor (Azure Monitor REST API)</div>
+      <div id="chart-my-responses" style="height: 280px;"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="chart">
+        <h2>项目级 Input/Output Tokens · 时间序列</h2>
+        <div class="desc">指标: <code class="inline">AgentInputTokens</code> + <code class="inline">AgentOutputTokens</code> · 项目共享, 不按学员拆分 (preview 限制)</div>
+        <div id="chart-tokens" style="height: 240px;"></div>
+      </div>
+      <div class="chart">
+        <h2>项目内 AgentResponses 分布 · 各学员 share</h2>
+        <div class="desc">指标: <code class="inline">AgentResponses</code> · 按 AgentId 拆分 (各学员 hosted agent + 老的 prompt agents)</div>
+        <div id="chart-agents-share" style="height: 240px;"></div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="chart">
+        <h2>项目级 Model Requests · 平均速率</h2>
+        <div class="desc">指标: <code class="inline">ModelRequests</code> (avg)</div>
+        <div id="chart-model-requests" style="height: 220px;"></div>
+      </div>
+      <div class="chart">
+        <h2>项目级 Model TimeToResponse · 平均延迟</h2>
+        <div class="desc">指标: <code class="inline">TimeToResponse</code> (avg, ms)</div>
+        <div id="chart-model-latency" style="height: 220px;"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  workshop · 本地 observability · 数据来源: <code class="inline">microsoft.insights/metrics</code> on
+  <code class="inline">Microsoft.CognitiveServices/.../projects/...</code> · 不走 portal, 不走 App Insights, 不需要 az login。
+</footer>
+
+<script>
+'use strict';
+
+const SHORT_TIME_FMT = (iso) => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
+
+const charts = {};
+function getChart(id) {
+  if (!charts[id]) charts[id] = echarts.init(document.getElementById(id), 'dark');
+  return charts[id];
+}
+
+const NUMBER_FMT = (n) => {
+  if (n == null || isNaN(n)) return '-';
+  if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return (n/1e3).toFixed(1) + 'k';
+  return Math.round(n).toString();
+};
+
+function renderKpis(data) {
+  const kpi = data.kpi || {};
+  const cards = [
+    { label: '我的 AgentResponses', value: kpi.my_total_responses, sub: `占项目 ${kpi.my_share_pct ?? 0}%` },
+    { label: '项目 Input Tokens',   value: kpi.project_input_tokens,  sub: 'all agents combined' },
+    { label: '项目 Output Tokens',  value: kpi.project_output_tokens, sub: 'all agents combined' },
+    { label: '项目 Total Tokens',   value: kpi.project_total_tokens,  sub: 'input + output' },
+    { label: '项目 Tool Calls',     value: kpi.project_tool_calls,    sub: 'all agents combined' },
+  ];
+  document.getElementById('kpi-cards').innerHTML = cards.map(c =>
+    `<div class="kpi"><div class="label">${c.label}</div><div class="value">${NUMBER_FMT(c.value)}</div><div class="sub">${c.sub}</div></div>`
+  ).join('');
+}
+
+function lineSeries(name, series, color) {
+  if (!series || !series.timestamps) return { name, type: 'line', data: [] };
+  return {
+    name, type: 'line', smooth: true, symbol: 'circle', symbolSize: 4,
+    itemStyle: { color }, areaStyle: { opacity: 0.15, color },
+    data: series.timestamps.map((t, i) => [t, series.values[i] ?? 0]),
+  };
+}
+
+function renderMyResponses(data) {
+  const s = (data.series || {}).my_responses;
+  const c = getChart('chart-my-responses');
+  c.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' }, valueFormatter: (v) => v },
+    grid: { left: 50, right: 20, top: 20, bottom: 30 },
+    xAxis: { type: 'time', axisLabel: { color: '#8a8f99', formatter: SHORT_TIME_FMT } },
+    yAxis: { type: 'value', name: 'responses', nameTextStyle: { color: '#8a8f99' }, splitLine: { lineStyle: { color: '#2a2f3a' } } },
+    series: [lineSeries('AgentResponses (我的)', s, '#66c2a5')],
+  });
+}
+
+function renderTokens(data) {
+  const inS = (data.series || {}).project_in_tokens;
+  const outS = (data.series || {}).project_out_tokens;
+  const c = getChart('chart-tokens');
+  c.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis', axisPointer: { type: 'cross' } },
+    legend: { textStyle: { color: '#8a8f99' }, top: 0 },
+    grid: { left: 60, right: 20, top: 30, bottom: 30 },
+    xAxis: { type: 'time', axisLabel: { color: '#8a8f99', formatter: SHORT_TIME_FMT } },
+    yAxis: { type: 'value', name: 'tokens', nameTextStyle: { color: '#8a8f99' }, splitLine: { lineStyle: { color: '#2a2f3a' } } },
+    series: [
+      lineSeries('Input', inS, '#4a90e2'),
+      lineSeries('Output', outS, '#ffd166'),
+    ],
+  });
+}
+
+function renderAgentsShare(data) {
+  const items = (data.agents_share || [])
+    .filter(a => a.total > 0)
+    .map(a => ({
+      name: a.agentId || 'unknown',
+      value: a.total,
+      itemStyle: a.agentId && data.agent_name && a.agentId.startsWith(data.agent_name)
+        ? { color: '#66c2a5' } : null,
+    }));
+  const c = getChart('chart-agents-share');
+  c.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'item', valueFormatter: (v) => v + ' responses' },
+    legend: { type: 'scroll', orient: 'vertical', right: 0, top: 10, textStyle: { color: '#8a8f99', fontSize: 11 } },
+    series: [{
+      type: 'pie', radius: ['40%', '70%'], center: ['35%', '50%'],
+      label: { color: '#e6e6e6', fontSize: 11, formatter: '{b}\n{c} ({d}%)' },
+      data: items,
+    }],
+  });
+}
+
+function renderModelRequests(data) {
+  const s = (data.series || {}).model_requests;
+  const c = getChart('chart-model-requests');
+  c.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis' },
+    grid: { left: 50, right: 20, top: 20, bottom: 30 },
+    xAxis: { type: 'time', axisLabel: { color: '#8a8f99', formatter: SHORT_TIME_FMT } },
+    yAxis: { type: 'value', splitLine: { lineStyle: { color: '#2a2f3a' } } },
+    series: [lineSeries('ModelRequests', s, '#4a90e2')],
+  });
+}
+
+function renderModelLatency(data) {
+  const s = (data.series || {}).model_latency_ms;
+  const c = getChart('chart-model-latency');
+  c.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis', valueFormatter: (v) => v == null ? '-' : Math.round(v) + ' ms' },
+    grid: { left: 60, right: 20, top: 20, bottom: 30 },
+    xAxis: { type: 'time', axisLabel: { color: '#8a8f99', formatter: SHORT_TIME_FMT } },
+    yAxis: { type: 'value', name: 'ms', nameTextStyle: { color: '#8a8f99' }, splitLine: { lineStyle: { color: '#2a2f3a' } } },
+    series: [lineSeries('TimeToResponse', s, '#fc8d62')],
+  });
+}
+
+async function loadData() {
+  try {
+    const data = window.__METRICS__;
+    if (!data) throw new Error('window.__METRICS__ not set (data/my-metrics.js 未生成或加载失败)');
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('meta-agent').textContent = 'agent=' + (data.agent_name || '?');
+    document.getElementById('meta-window').textContent = 'window=' + (data.time_window_minutes ?? '?') + ' min';
+    document.getElementById('meta-gen').textContent = 'generated=' + (data.generated_at ? new Date(data.generated_at).toLocaleString() : '?');
+
+    renderKpis(data);
+    renderMyResponses(data);
+    renderTokens(data);
+    renderAgentsShare(data);
+    renderModelRequests(data);
+    renderModelLatency(data);
+  } catch (e) {
+    console.error(e);
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
+  }
+}
+
+document.getElementById('reload-btn').addEventListener('click', () => location.reload());
+window.addEventListener('resize', () => Object.values(charts).forEach(c => c.resize()));
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-framework-azure-ai-py": {
+      "source": "microsoft/skills",
+      "sourceType": "github",
+      "skillPath": ".github/plugins/azure-sdk-python/skills/agent-framework-azure-ai-py/SKILL.md",
+      "computedHash": "95c34ef6083d5ec5ed5fb41884006013779d5edb56e114c07f568fd2631b4218"
+    },
+    "azure-ai-projects-py": {
+      "source": "microsoft/skills",
+      "sourceType": "github",
+      "skillPath": ".github/plugins/azure-sdk-python/skills/azure-ai-projects-py/SKILL.md",
+      "computedHash": "fd86f297eb9048bb1a3b8829d152ff1cad57d06258ca10db032664f88c73fbb6"
+    },
+    "microsoft-foundry": {
+      "source": "microsoft/skills",
+      "sourceType": "github",
+      "skillPath": ".github/plugins/azure-skills/skills/microsoft-foundry/SKILL.md",
+      "computedHash": "d886eb459da477d9365d6fc9d8a325ca710cc8d493b7132b89a87320e757edb4"
+    },
+    "skill-creator": {
+      "source": "microsoft/skills",
+      "sourceType": "github",
+      "skillPath": ".github/skills/skill-creator/SKILL.md",
+      "computedHash": "10dd91ef8b5cf30d7db80ef856fb16c72061c7cb5dd41d3781ea80f9abe326d3"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+agent:
+  name: research-agent
+  description: 市场/竞品研究助手 — web search + fetch + 结构化报告。
+
+  instructions:
+    file: ../../personas/research-agent.md
+
+  model: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+
+  tools:
+    # code_interpreter 用于学员在做对比时让 LLM 跑数据小计算。
+    - type: code_interpreter
+    # 可选：启用 Foundry 内置 Bing grounding。若讲师已在共享 project 上预连了 Bing 资源，
+    # 取消注释后填入连接名。
+    # - type: grounding_with_bing_search
+    #   grounding_with_bing_search:
+    #     connections:
+    #       - connection_id: ${BING_GROUNDING_CONNECTION_ID}

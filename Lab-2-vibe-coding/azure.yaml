@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+requiredVersions:
+    azd: '>= 1.21.3'
+    extensions:
+        azure.ai.agents: latest
+name: foundry-copilot-workshop-research
+metadata:
+    template: foundry-copilot-workshop@2.0.0
+services:
+    research-agent:
+        project: src/research_agent
+        host: azure.ai.agent
+        language: docker
+        docker:
+            path: ./Dockerfile
+            context: ../..
+            remoteBuild: true
+        config:
+            container:
+                resources:
+                    cpu: "1"
+                    memory: 2Gi
+            startupCommand: python -m src.research_agent.main
+hooks:
+    postdeploy:
+        windows:
+            name: postdeploy
+            kind: pwsh
+            shell: pwsh
+            run: ./hooks/postdeploy-grant-roles.ps1
+        posix:
+            shell: pwsh
+            run: ./hooks/postdeploy-grant-roles.ps1
