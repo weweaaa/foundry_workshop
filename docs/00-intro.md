@@ -67,7 +67,7 @@
 
 ### 选项 A · VS Code Copilot Chat(默认推荐)
 
-Lab 0 跑 `install-maf-copilot-skills.ps1` 会启用 `Lab-2-vibe-coding/.github/` 下的工作坊私有 customization:
+Lab 0 跑 `install-maf-copilot-skills.ps1`(Windows)或 `install-maf-copilot-skills.sh`(macOS / Linux)会启用 `Lab-2-vibe-coding/.github/` 下的工作坊私有 customization:
 
 | 类型 | 文件 | 作用 |
 |------|------|------|

@@ -39,11 +39,11 @@
 .EXAMPLE
     # 推荐: 在 Lab-2-vibe-coding 目录, .env 已填好 FOUNDRY_API_KEY + endpoint
     cd Lab-2-vibe-coding
-    ..\scripts\chat-hosted.ps1
+    ..\scripts\Windows\chat-hosted.ps1
 
 .EXAMPLE
     # 显式传参 (绕开 .env / azd env)
-    ..\scripts\chat-hosted.ps1 `
+    ..\scripts\Windows\chat-hosted.ps1 `
       -ApiKey    '84RaDhfu...' `
       -Endpoint  'https://itd-foundry.services.ai.azure.com/api/projects/itd-foundry-workshop' `
       -AgentName research-agent-stu07
@@ -68,9 +68,9 @@ function Write-Ok    { param([string]$m) Write-Host "✅ $m" -ForegroundColor Gr
 function Write-Err   { param([string]$m) Write-Host "❌ $m" -ForegroundColor Red }
 
 # ---------------------------------------------------------------------------
-# 1. Load .env (default: workshop root, one level above this script's folder)
+# 1. Load .env (default: workshop root, two levels above this script's folder)
 # ---------------------------------------------------------------------------
-if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\.env' }
+if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\..\.env' }
 $envFromFile = @{}
 if (Test-Path $EnvFile) {
     Get-Content $EnvFile | ForEach-Object {
@@ -140,7 +140,7 @@ $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
 $b64 = [Convert]::ToBase64String($bytes)
 $cfgFragment = [Uri]::EscapeDataString($b64)
 
-$htmlPath = Join-Path $PSScriptRoot 'chat-hosted\index.html'
+$htmlPath = Join-Path $PSScriptRoot '..\chat-hosted\index.html'
 if (-not (Test-Path $htmlPath)) {
     Write-Err "找不到 $htmlPath。仓库被改坏了?"
     exit 1

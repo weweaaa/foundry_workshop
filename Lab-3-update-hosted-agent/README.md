@@ -49,25 +49,53 @@ Copilot 会按 `.github/prompts/deploy.prompt.md` 重写两个 yaml,并保证:
 
 Copilot CLI:
 
+**Windows（PowerShell）**
+
 ```powershell
 $tpl = Get-Content Lab-2-vibe-coding\.github\prompts\deploy.prompt.md -Raw
 $prompt = "$tpl`n`n参数: agentDir=research_agent, agentDeployName=research-agent-`${STUDENT_SUFFIX}"
 gh copilot suggest $prompt
 ```
 
+**macOS / Linux（bash）**
+
+```bash
+tpl=$(cat Lab-2-vibe-coding/.github/prompts/deploy.prompt.md)
+prompt="${tpl}"$'\n\n'"参数：agentDir=research_agent, agentDeployName=research-agent-\${STUDENT_SUFFIX}"
+gh copilot suggest "$prompt"
+```
+
 ## 3.5 注册进 azd(覆盖 Lab 1 placeholder)
+
+**Windows（PowerShell）**
 
 ```powershell
 # 替换 azure.yaml services 中的 placeholder
 azd ai agent init -m src\research_agent\agent.manifest.yaml
 ```
 
+**macOS / Linux（bash）**
+
+```bash
+# 替换 azure.yaml services 中的 placeholder
+azd ai agent init -m src/research_agent/agent.manifest.yaml
+```
+
 如果 Lab 1 注入的 `agent-framework-agent-basic-responses` 还在 `azure.yaml.services` 里,手动删掉它,只留 `research-agent` 这一段。
 
 ## 3.6 部署
 
+**Windows（PowerShell）**
+
 ```powershell
 azd env set AGENT_NAME "research-agent-$env:STUDENT_SUFFIX"
+azd deploy research-agent
+```
+
+**macOS / Linux（bash）**
+
+```bash
+azd env set AGENT_NAME "research-agent-${STUDENT_SUFFIX}"
 azd deploy research-agent
 ```
 
@@ -82,8 +110,16 @@ azd deploy research-agent
 
 **🖥️  图形化多轮对话 (推荐)**
 
+**Windows（PowerShell）**
+
 ```powershell
-..\scripts\chat-hosted.ps1
+..\scripts\Windows\chat-hosted.ps1
+```
+
+**macOS / Linux（bash）**
+
+```bash
+../scripts/macOSLinux/chat-hosted.sh
 ```
 
 在浏览器里跟自己的 agent 多轮聊天 (详见 Lab 1 §1.7). 业务问题示例:
@@ -94,18 +130,37 @@ azd deploy research-agent
 
 **💻  命令行单 prompt (CI / 脚本)**
 
+**Windows（PowerShell）**
+
 ```powershell
-..\scripts\invoke-hosted.ps1 `
+..\scripts\Windows\invoke-hosted.ps1 `
     -AgentName "research-agent-$env:STUDENT_SUFFIX" `
     -Prompt "帮我研究'消费级 AI 笔记应用'品类,2025 重点对比 5 家"
+```
+
+**macOS / Linux（bash）**
+
+```bash
+../scripts/macOSLinux/invoke-hosted.sh \
+    --agent-name "research-agent-${STUDENT_SUFFIX}" \
+    --prompt "帮我研究《消费级 AI 笔记应用》品类，2025 重点对比 5 家"
 ```
 
 应返回与 Lab 2 本地版本一致的业务 JSON(包含 `report` / `sources` / `confidence`)。trace 会进 Foundry 内置存储,下一 Lab 拉。
 
 ## 3.8 看 agent 状态
 
+**Windows（PowerShell）**
+
 ```powershell
-..\scripts\invoke-hosted.ps1 -StatusOnly -AgentName "research-agent-$env:STUDENT_SUFFIX"
+..\scripts\Windows\invoke-hosted.ps1 -StatusOnly -AgentName "research-agent-$env:STUDENT_SUFFIX"
+# status=Reachable, http=200, agent=research-agent-stuNN
+```
+
+**macOS / Linux（bash）**
+
+```bash
+../scripts/macOSLinux/invoke-hosted.sh --status-only --agent-name "research-agent-${STUDENT_SUFFIX}"
 # status=Reachable, http=200, agent=research-agent-stuNN
 ```
 
@@ -113,8 +168,8 @@ azd deploy research-agent
 
 ✅ `azure.yaml` 只剩 `research-agent`(或你的业务 agent 名)
 ✅ `azd deploy` 完成,无错
-✅ `invoke-hosted.ps1` 返回业务 JSON
-✅ `sanity-check.ps1` 全 ✅
+✅ `invoke-hosted.ps1` / `invoke-hosted.sh` 返回业务 JSON
+✅ `sanity-check.ps1` / `sanity-check.sh` 全 ✅
 
 ## 3.10 故障速查
 

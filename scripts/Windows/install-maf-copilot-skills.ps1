@@ -13,7 +13,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$WorkspaceRoot = (Split-Path -Parent $PSScriptRoot)
+    [string]$WorkspaceRoot = (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))
 )
 
 $ErrorActionPreference = 'Stop'

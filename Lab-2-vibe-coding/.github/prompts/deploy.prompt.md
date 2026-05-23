@@ -21,7 +21,15 @@ agent.manifest.yaml 要求：
 - tools: code_interpreter；若学员需要 Foundry Bing grounding，注释里给出取消注释的位置
 
 完成后执行：
+
+Windows(PowerShell):
 ```
 azd deploy ${input:agentDeployName}
-..\scripts\invoke-hosted.ps1 -AgentName ${input:agentDeployName} -Prompt "ping"
+..\scripts\Windows\invoke-hosted.ps1 -AgentName ${input:agentDeployName} -Prompt "ping"
+```
+
+macOS / Linux(bash):
+```
+azd deploy ${input:agentDeployName}
+../scripts/macOSLinux/invoke-hosted.sh --agent-name ${input:agentDeployName} --prompt "ping"
 ```

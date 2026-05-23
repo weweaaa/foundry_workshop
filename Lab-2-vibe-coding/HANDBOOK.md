@@ -44,8 +44,17 @@ Lab 1 部署的是 Foundry 提供的 placeholder。本 Lab 在 Lab-2-vibe-coding
 
 **A. 默认场景** —— 已经写好,不用改。直接 lint:
 
+**Windows（PowerShell）**
+
 ```powershell
 python ..\scripts\lint-persona.py personas\research-agent.md
+# ✅ persona research-agent OK · extends=[shared/guardrails.md] · version=1.0.0
+```
+
+**macOS / Linux（bash）**
+
+```bash
+python3 ../scripts/lint-persona.py personas/research-agent.md
 # ✅ persona research-agent OK · extends=[shared/guardrails.md] · version=1.0.0
 ```
 
@@ -60,6 +69,8 @@ VS Code:
 Copilot 会按 `.github/instructions/maf-personas.instructions.md` 的约定生成 `personas/invoice-explainer.md`。
 
 Copilot CLI:
+
+**Windows（PowerShell）**
 
 ```powershell
 $prompt = @"
@@ -78,6 +89,28 @@ frontmatter 含 name: invoice-explainer, version: 1.0.0, owner: <team>, extends:
 body 顶部用 {{include: shared/guardrails.md}} inline 共享 guardrails
 "@
 gh copilot suggest $prompt
+```
+
+**macOS / Linux（bash）**
+
+```bash
+prompt=$(cat <<'EOF'
+按 Lab-2-vibe-coding/.github/instructions/maf-personas.instructions.md 的约定，
+生成 personas/invoice-explainer.md：
+
+- 角色：发票解读助手
+- 边界：
+  1. 不查实时汇率
+  2. 不给税务建议
+  3. 必须从用户提供的发票文本里抽事实
+- 工具：ocr_extract, classify_charges, currency_normalize
+- 输出契约：{lineItems, totalsByCategory, suspiciousFlags}
+
+frontmatter 含 name: invoice-explainer、version: 1.0.0、owner: <team>、extends: shared/guardrails.md
+body 顶部用 {{include: shared/guardrails.md}} inline 共享 guardrails
+EOF
+)
+gh copilot suggest "$prompt"
 ```
 
 ### M2 · Skill(10 min)
@@ -152,6 +185,8 @@ agent = Agent(
 
 启动:
 
+**Windows（PowerShell）**
+
 ```powershell
 # 装依赖(只需一次)
 pip install -r requirements.txt
@@ -165,18 +200,43 @@ Get-Content .env | Where-Object { $_ -match '^\w' } | ForEach-Object {
 agentdev run src\research_agent\main.py --port 8087
 ```
 
+**macOS / Linux（bash）**
+
+```bash
+# 装依赖(只需一次)
+pip install -r requirements.txt
+
+# 加载 .env到当前 shell
+set -a; source .env; set +a
+
+# 启动(默认 8087)
+agentdev run src/research_agent/main.py --port 8087
+```
+
 第二个终端:
+
+**Windows（PowerShell）**
 
 ```powershell
 $body = @{ input = "帮我研究'消费级 AI 笔记应用'品类,2025 重点对比 5 家" } | ConvertTo-Json
 Invoke-RestMethod -Method POST -Uri "http://localhost:8087/responses" -ContentType "application/json" -Body $body
 ```
 
+**macOS / Linux（bash）**
+
+```bash
+curl -s -X POST http://localhost:8087/responses \
+  -H "Content-Type: application/json" \
+  -d '{"input":"帮我研究\"消费级 AI 笔记应用\"品类，2025 重点对比 5 家"}' | jq .
+```
+
 应返回符合 `research-agent.md` 输出契约的 JSON(含 `report` + `sources` + `confidence`)。
 
 ### M5 · Agent Inspector + 用 Copilot 反思 trace(5 min)
 
-```powershell
+**Windows（PowerShell）** 与 **macOS / Linux（bash）** 一致：
+
+```
 agentdev inspect
 ```
 

@@ -38,7 +38,7 @@ function Write-Result {
 
 Write-Host "`n=== Workshop Sanity Check ===`n" -ForegroundColor Cyan
 
-if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\.env' }
+if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\..\.env' }
 $envFromFile = @{}
 if (Test-Path $EnvFile) {
     Get-Content $EnvFile | ForEach-Object {

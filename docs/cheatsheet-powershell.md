@@ -1,6 +1,6 @@
 # 速查卡 · PowerShell 转义与常用命令
 
-> Windows 学员默认在 `pwsh` (PowerShell 7) 里跑;macOS / Linux 学员请装 [PowerShell on Linux/macOS](https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-linux) 或把命令翻译成 bash。
+> Windows 学员默认在 `pwsh` (PowerShell 7) 里跑。macOS / Linux 学员推荐直接用工作坊提供的原生 bash 版脚本（`scripts/macOSLinux/*.sh`）；如果仍希望用 PowerShell，可装 [PowerShell on Linux/macOS](https://learn.microsoft.com/powershell/scripting/install/installing-powershell-on-linux)。
 
 ## 字符串引用规则
 
@@ -63,7 +63,7 @@ Invoke-RestMethod -Method POST `
   -Body $body
 ```
 
-> 一般直接用 `scripts/invoke-hosted.ps1` 即可,它把 token 获取 / URL 构造 / 重试都封装好了。
+> 一般直接用 `scripts/Windows/invoke-hosted.ps1` (或 macOS / Linux 上的 `scripts/macOSLinux/invoke-hosted.sh`) 即可,它把 token 获取 / URL 构造 / 重试都封装好了。
 
 ## 跨 shell 的环境变量
 

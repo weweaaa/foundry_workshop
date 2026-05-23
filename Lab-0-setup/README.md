@@ -11,6 +11,8 @@
 
 ## 0.2 工具最低版本
 
+**Windows（PowerShell）**
+
 ```powershell
 azd version          # ≥ 1.21.3
 az version           # ≥ 2.55
@@ -18,6 +20,18 @@ python --version     # ≥ 3.11
 docker version       # 可选 (本工作坊走 ACR remote build;本地有 Docker 更方便)
 gh --version         # 任意 (用 Copilot CLI 必装)
 code --version       # 用 VS Code 路径必装
+```
+
+**macOS / Linux（bash）**
+
+```bash
+azd version          # ≥ 1.21.3
+az version           # ≥ 2.55
+python3 --version    # ≥ 3.11
+docker version       # 可选
+gh --version         # 任意 (Copilot CLI 必装)
+code --version       # 用 VS Code 路径必装
+jq --version         # bash 脚本依赖；macOS：`brew install jq`；Ubuntu：`apt-get install jq`
 ```
 
 不达标 → 举手 `#help-lab-0`。
@@ -44,6 +58,8 @@ GitHub Copilot 订阅 / trial 激活信息也找讲师拿。
 
 ## 0.4 SP 登录(azd + az 都要登)
 
+**Windows（PowerShell）**
+
 ```powershell
 $AppId   = "<AZURE_CLIENT_ID>"
 $Secret  = "<AZURE_CLIENT_SECRET>"
@@ -61,7 +77,28 @@ az account set --subscription $SubId
 azd config set defaults.subscription $SubId
 ```
 
-> ⚠️ PowerShell 转义:secret 含 `$` `!` 空格等用双引号;含 `"` 用反引号 `` ` `` 转义。详见 [`cheatsheet-powershell.md`](cheatsheet-powershell.md)。
+> ⚠️ PowerShell 转义:secret 含 `$` `!` 空格等用双引号;含 `"` 用反引号 `` ` `` 转义。详见 [`cheatsheet-powershell.md`](../docs/cheatsheet-powershell.md)。
+
+**macOS / Linux（bash）**
+
+```bash
+APP_ID="<AZURE_CLIENT_ID>"
+SECRET="<AZURE_CLIENT_SECRET>"
+TEN_ID="<AZURE_TENANT_ID>"
+SUB_ID="<AZURE_SUBSCRIPTION_ID>"
+
+# 1. azd 登录
+azd auth login --client-id "$APP_ID" --tenant-id "$TEN_ID" --client-secret "$SECRET"
+
+# 2. az 登录
+az login --service-principal -u "$APP_ID" -p "$SECRET" --tenant "$TEN_ID" >/dev/null
+az account set --subscription "$SUB_ID"
+
+# 3. azd 默认订阅
+azd config set defaults.subscription "$SUB_ID"
+```
+
+> ⚠️ bash 转义：secret 含 `$` `!` `\` 空格等一律用**单引号**包，避免双引号被 shell 插值；例：`SECRET='P@ss!w0rd$xyz'`。
 
 ## 0.5 安装 azd ai agent 扩展
 
@@ -82,8 +119,16 @@ git checkout lab-0-ready    # 把你拉到 Lab 0 起点
 
 ### 路径 A · VS Code Copilot Chat(推荐)
 
+**Windows（PowerShell）**
+
 ```powershell
-.\scripts\install-maf-copilot-skills.ps1
+.\scripts\Windows\install-maf-copilot-skills.ps1
+```
+
+**macOS / Linux（bash）**
+
+```bash
+./scripts/macOSLinux/install-maf-copilot-skills.sh
 ```
 
 脚本会:
@@ -112,7 +157,19 @@ code .
 
 ### 路径 B · GitHub Copilot CLI
 
+**Windows（PowerShell）**
+
 ```powershell
+# 装 gh-copilot 扩展
+gh extension install github/gh-copilot
+
+# 验证
+gh copilot suggest "list azure resource groups in current sub"
+```
+
+**macOS / Linux（bash）**
+
+```bash
 # 装 gh-copilot 扩展
 gh extension install github/gh-copilot
 
@@ -122,14 +179,25 @@ gh copilot suggest "list azure resource groups in current sub"
 
 CLI 不会自动读 `.agents/skills/`。需要 skill 知识时,用 cheat sheet 里的模式手动拼接:
 
+**Windows（PowerShell）**
+
 ```powershell
 $ctx = Get-Content .agents\skills\microsoft-foundry\SKILL.md -Raw
 gh copilot suggest "$ctx`n`n基于上面的 skill 内容回答: 我如何确认共享 Foundry project 上是否有名为 research-agent-stu07 的 hosted agent?"
 ```
 
-详见 [`cheatsheet-copilot.md`](cheatsheet-copilot.md)。
+**macOS / Linux（bash）**
+
+```bash
+ctx=$(cat .agents/skills/microsoft-foundry/SKILL.md)
+gh copilot suggest "$ctx"$'\n\n'"基于上面的 skill 内容回答: 我如何确认共享 Foundry project 上是否有名为 research-agent-stu07 的 hosted agent?"
+```
+
+详见 [`cheatsheet-copilot.md`](../docs/cheatsheet-copilot.md)。
 
 ## 0.8 把讲师凭据写入本地 .env
+
+**Windows（PowerShell）**
 
 ```powershell
 cd Lab-2-vibe-coding
@@ -138,11 +206,29 @@ Copy-Item .env.example .env
 notepad .env
 ```
 
+**macOS / Linux（bash）**
+
+```bash
+cd Lab-2-vibe-coding
+cp .env.example .env
+# 用你的默认编辑器打开 .env,逐行填入讲师给你的字段
+${EDITOR:-nano} .env
+```
+
 ## 0.9 出口检查点
+
+**Windows（PowerShell）**
 
 ```powershell
 azd auth login --check-status
 if ($LASTEXITCODE -eq 0) { Write-Host "✅ azd OK" } else { Write-Host "❌ azd NOT logged in" }
+az account show --query name -o tsv
+```
+
+**macOS / Linux（bash）**
+
+```bash
+azd auth login --check-status && echo "✅ azd OK" || echo "❌ azd NOT logged in"
 az account show --query name -o tsv
 ```
 
@@ -160,7 +246,7 @@ az account show --query name -o tsv
 | `az login` OK 但 `azd auth login` 失败 | azd 与 az 独立登录态,两边都要登 |
 | `azd extension install` 网络超时 | 切手机热点 / 找助教要离线 nupkg |
 | Copilot 图标灰色 | `Ctrl+Shift+P` → `GitHub Copilot: Sign in` 重登 |
-| Copilot Chat 下拉看不到 `maf-agent` | 重新跑 `install-maf-copilot-skills.ps1`,然后 `Developer: Reload Window` |
+| Copilot Chat 下拉看不到 `maf-agent` | 重新跑 `install-maf-copilot-skills.ps1`/`.sh`,然后 `Developer: Reload Window` |
 | `gh copilot suggest` 报 `not authenticated` | `gh auth login` → 选 GitHub.com → 用浏览器登录 |
 | `.agents/skills/` 下找不到 skill | 跑 `npx -y skills add microsoft/skills --full-depth --copy -y -a github-copilot -s microsoft-foundry agent-framework-azure-ai-py azure-ai-projects-py skill-creator` 补装 |
 

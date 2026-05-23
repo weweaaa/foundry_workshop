@@ -54,6 +54,8 @@ Lab-2-vibe-coding/
 
 ## 本地跑通(Lab 2)
 
+**Windows（PowerShell）**
+
 ```powershell
 # 1. 装依赖
 pip install -r requirements.txt
@@ -62,7 +64,7 @@ pip install -r requirements.txt
 Copy-Item .env.example .env
 notepad .env       # 填 SP / endpoint / 模型 / 学员后缀
 
-# 3. 加载 .env(PowerShell)
+# 3. 加载 .env
 Get-Content .env | Where-Object { $_ -match '^\w' } | ForEach-Object {
   $k, $v = $_ -split '=', 2; [Environment]::SetEnvironmentVariable($k, $v, 'Process')
 }
@@ -75,7 +77,31 @@ $body = @{ input = "帮我研究'消费级 AI 笔记应用'品类,2025 重点对
 Invoke-RestMethod -Method POST -Uri "http://localhost:8087/responses" -ContentType "application/json" -Body $body
 ```
 
+**macOS / Linux（bash）**
+
+```bash
+# 1. 装依赖
+pip install -r requirements.txt
+
+# 2. 环境变量(从讲师下发的凭据复制到 .env)
+cp .env.example .env
+${EDITOR:-nano} .env       # 填 SP / endpoint / 模型 / 学员后缀
+
+# 3. 加载 .env到当前 shell
+set -a; source .env; set +a
+
+# 4. 启动
+agentdev run src/research_agent/main.py --port 8087
+
+# 5. 另一个终端发请求
+curl -s -X POST http://localhost:8087/responses \
+  -H "Content-Type: application/json" \
+  -d '{"input":"帮我研究\"消费级 AI 笔记应用\"品类，2025 重点对比 5 家"}' | jq .
+```
+
 ## 部署到 Foundry(Lab 3)
+
+**Windows（PowerShell）**
 
 ```powershell
 azd env set AGENT_NAME       research-agent-$env:STUDENT_SUFFIX
@@ -83,7 +109,18 @@ azd env set AZURE_AI_PROJECT_ENDPOINT $env:AZURE_AI_PROJECT_ENDPOINT
 azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME $env:AZURE_AI_MODEL_DEPLOYMENT_NAME
 
 azd deploy research-agent
-..\scripts\invoke-hosted.ps1 -AgentName "research-agent-$env:STUDENT_SUFFIX" -Prompt "ping"
+..\scripts\Windows\invoke-hosted.ps1 -AgentName "research-agent-$env:STUDENT_SUFFIX" -Prompt "ping"
+```
+
+**macOS / Linux（bash）**
+
+```bash
+azd env set AGENT_NAME       "research-agent-${STUDENT_SUFFIX}"
+azd env set AZURE_AI_PROJECT_ENDPOINT "${AZURE_AI_PROJECT_ENDPOINT}"
+azd env set AZURE_AI_MODEL_DEPLOYMENT_NAME "${AZURE_AI_MODEL_DEPLOYMENT_NAME}"
+
+azd deploy research-agent
+../scripts/macOSLinux/invoke-hosted.sh --agent-name "research-agent-${STUDENT_SUFFIX}" --prompt "ping"
 ```
 
 详见 [`../docs/../Lab-3-update-hosted-agent/README.md`](../docs/../Lab-3-update-hosted-agent/README.md)。

@@ -19,4 +19,5 @@ description: 生成或更新一个 MAF persona (Soul)
 5. 末尾给出 5 项以上自检清单（checkbox）。
 
 生成后再执行 `python ..\scripts\lint-persona.py personas\${input:agentName}.md`
+(macOS / Linux: `python3 ../scripts/lint-persona.py personas/${input:agentName}.md`)
 确认通过。
