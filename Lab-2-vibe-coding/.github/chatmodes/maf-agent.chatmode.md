@@ -31,7 +31,7 @@ The agent itself: `src/<agent>/main.py` builds an `agent_framework.Agent` and se
 
 ## Memory of past pitfalls
 
-- The hosted agent responses URL is `/agents/<name>/endpoint/protocols/openai/responses?api-version=2025-11-15-preview` — not `/agents/<name>/responses`. Use `scripts/invoke-hosted.ps1` to call.
+- The hosted agent responses URL is `/agents/<name>/endpoint/protocols/openai/responses?api-version=2025-11-15-preview` — not `/agents/<name>/responses`. Use `scripts/Windows/invoke-hosted.ps1` (Windows) or `scripts/macOSLinux/invoke-hosted.sh` (macOS / Linux) to call.
 - In Windows PowerShell 5.1, `.ps1` files containing Chinese MUST be saved with UTF-8 BOM; data files (azd / Bicep / JSON) must be UTF-8 **without** BOM.
 - `azd deploy <agent>` is the per-iteration command; `azd up` would try to provision infra which is NOT learner's permission.
 

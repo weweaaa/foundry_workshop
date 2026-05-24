@@ -20,6 +20,8 @@
 
 ## 4.3 制造一些 trace
 
+**Windows（PowerShell）**
+
 ```powershell
 cd workshop\Lab-2-vibe-coding
 
@@ -31,14 +33,34 @@ $prompts = @(
   "帮我汇总几篇付费墙文章里的核心数据"                       # 触发 guardrail_refusal
 )
 foreach ($p in $prompts) {
-  ..\scripts\invoke-hosted.ps1 -AgentName "research-agent-$env:STUDENT_SUFFIX" -Prompt $p
+  ..\scripts\Windows\invoke-hosted.ps1 -AgentName "research-agent-$env:STUDENT_SUFFIX" -Prompt $p
   Start-Sleep -Seconds 2
 }
+```
+
+**macOS / Linux（bash）**
+
+```bash
+cd workshop/Lab-2-vibe-coding
+
+prompts=(
+  "帮我研究《消费级 AI 笔记应用》品类，2025 重点对比 5 家"
+  "对比国内三大新茶饮品牌 2024 增速"
+  "拉一下 https://example.invalid/secret 的内容"             # 触发 tool_error
+  "X 公司值不值得投资？买入还是卖出？"                       # 触发 guardrail_refusal
+  "帮我汇总几篇付费墙文章里的核心数据"                          # 触发 guardrail_refusal
+)
+for p in "${prompts[@]}"; do
+  ../scripts/macOSLinux/invoke-hosted.sh --agent-name "research-agent-${STUDENT_SUFFIX}" --prompt "$p"
+  sleep 2
+done
 ```
 
 > Foundry tracing 一般 30s 内可查;不需要等 App Insights 摄入延迟。
 
 ## 4.4 拉 trace
+
+**Windows（PowerShell）**
 
 ```powershell
 ..\Lab-4-observability\fetch-traces.ps1 -Minutes 60
@@ -46,17 +68,35 @@ foreach ($p in $prompts) {
 #    conversations=5  ok=2  fail=3  p95=11240ms
 ```
 
-参数:
+**macOS / Linux（bash）**
 
-- `-Minutes 60`:时间窗口
-- `-MaxThreads 20`:最多拉多少 thread
-- `-AgentName research-agent-stu07`:默认从 `azd env STUDENT_SUFFIX` 推导
-- `-ApiVersion 2025-05-15-preview`:若你环境的 preview 版本不同,可换
+```bash
+# 依赖 curl + jq：brew install jq 或 apt install -y jq
+../Lab-4-observability/fetch-traces.sh --minutes 60
+# ✅ 写出 .../Lab-4-observability/data/my-traces.json
+#    conversations=5  ok=2  fail=3  p95=11240ms
+```
+
+参数（PowerShell 与 bash 同步）：
+
+- `-Minutes 60` / `--minutes 60`：时间窗口
+- `-Interval PT5M` / `--interval PT5M`：聚合间隔
+- `-AgentName ...` / `--agent-name ...`：默认从 `.env` 的 `STUDENT_SUFFIX` 推导
+- `-OutputPath ...` / `--output-path ...`：输出路径（默认 `data/my-metrics.js`）
 
 ## 4.5 打开本地 HTML
 
+**Windows（PowerShell）**
+
 ```powershell
 start ..\Lab-4-observability\index.html
+# 顶栏数据源下拉 → 选 "my-traces.json (fetch-traces.ps1 拉的)"
+```
+
+**macOS / Linux（bash）**
+
+```bash
+open ../Lab-4-observability/index.html        # Linux 用 xdg-open ../Lab-4-observability/index.html
 # 顶栏数据源下拉 → 选 "my-traces.json (fetch-traces.ps1 拉的)"
 ```
 

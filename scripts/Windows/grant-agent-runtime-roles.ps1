@@ -20,7 +20,7 @@
 
 .EXAMPLE
     # Run manually (from Lab-2-vibe-coding dir):
-    pwsh ..\scripts\grant-agent-runtime-roles.ps1
+    pwsh ..\scripts\Windows\grant-agent-runtime-roles.ps1
 
     # Or wired via `hooks.postdeploy` in azure.yaml — fires automatically after every `azd deploy`.
 #>
@@ -51,7 +51,7 @@ $AZURE_AI_USER_ROLE_ID  = '53ca6127-db72-4b80-b1b0-d745d6d5456d'
 # ---------------------------------------------------------------------------
 # 1. Resolve config: param > process env > workshop .env > azd env
 # ---------------------------------------------------------------------------
-if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\.env' }
+if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\..\.env' }
 $envFromFile = @{}
 if (Test-Path $EnvFile) {
     Get-Content $EnvFile | ForEach-Object {

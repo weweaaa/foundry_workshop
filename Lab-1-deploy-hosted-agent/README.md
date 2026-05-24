@@ -83,9 +83,18 @@ azd ai agent init -m https://github.com/azure-ai-foundry/foundry-samples/blob/ma
 
 Sample 的 `agent.manifest.yaml` 里 `model:` 写死了 `gpt-4.1-mini`,共享 project 上没部署这个模型。改成引用学员 azd env 的变量:
 
+**Windows（PowerShell）**
+
 ```powershell
 $mf = "src\agent-framework-agent-basic-responses\agent.manifest.yaml"
 (Get-Content $mf -Raw) -replace 'gpt-4\.1-mini', '${AZURE_AI_MODEL_DEPLOYMENT_NAME}' | Set-Content $mf -NoNewline
+```
+
+**macOS / Linux（bash）**
+
+```bash
+mf="src/agent-framework-agent-basic-responses/agent.manifest.yaml"
+sed -i.bak 's/gpt-4\.1-mini/${AZURE_AI_MODEL_DEPLOYMENT_NAME}/g' "$mf" && rm "$mf.bak"
 ```
 
 **VS Code 学员**可直接用 `/deploy` 斜杠让 Copilot 帮你重写:
@@ -96,6 +105,8 @@ $mf = "src\agent-framework-agent-basic-responses\agent.manifest.yaml"
 
 **Copilot CLI 学员** 用模板:
 
+**Windows（PowerShell）**
+
 ```powershell
 $prompt = @"
 参考 src/research_agent/agent.manifest.yaml 已有写法,把
@@ -105,6 +116,20 @@ src/agent-framework-agent-basic-responses/agent.manifest.yaml 改造成:
 3. 保留原 tools / instructions 部分
 "@
 gh copilot suggest $prompt
+```
+
+**macOS / Linux（bash）**
+
+```bash
+prompt=$(cat <<'EOF'
+参考 src/research_agent/agent.manifest.yaml 已有写法，把
+src/agent-framework-agent-basic-responses/agent.manifest.yaml 改造成：
+1. model 引用 ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+2. name 改成 research-agent-${STUDENT_SUFFIX}
+3. 保留原 tools / instructions 部分
+EOF
+)
+gh copilot suggest "$prompt"
 ```
 
 ### 让 placeholder 用学员后缀命名
@@ -133,8 +158,16 @@ azd deploy
 
 **🖥️  图形化聊天 (推荐, 像 ChatGPT 一样多轮对话)**
 
+**Windows（PowerShell）**
+
 ```powershell
-..\scripts\chat-hosted.ps1
+..\scripts\Windows\chat-hosted.ps1
+```
+
+**macOS / Linux（bash）**
+
+```bash
+../scripts/macOSLinux/chat-hosted.sh
 ```
 
 脚本会:
@@ -146,14 +179,24 @@ azd deploy
 
 打开后你会看到一个深色聊天界面, 输入消息按 Enter 即可. UI 直接调 `/responses` 端点; 多轮上下文保留在页面里; 失败时显示 HTTP 状态 + 原始 body 方便排错. **不需要登 Azure Portal, 也不需要 az CLI**.
 
-> token 仅注入到本地 URL hash, 不会发送到任何第三方服务. 一般 1 小时左右失效, 重跑 `chat-hosted.ps1` 即可换新.
+> token 仅注入到本地 URL hash, 不会发送到任何第三方服务. 一般 1 小时左右失效, 重跑 `chat-hosted.ps1` / `chat-hosted.sh` 即可换新.
 
 **💻  命令行单次验证 (适合自动化 / CI; 用 az 拿 token)**
+
+**Windows（PowerShell）**
 
 ```powershell
 azd env get-value AGENT_RESEARCH_AGENT_${env:STUDENT_SUFFIX}_RESPONSES_ENDPOINT
 # 或直接用脚本
-..\scripts\invoke-hosted.ps1 -AgentName "research-agent-$env:STUDENT_SUFFIX" -Prompt "ping"
+..\scripts\Windows\invoke-hosted.ps1 -AgentName "research-agent-$env:STUDENT_SUFFIX" -Prompt "ping"
+```
+
+**macOS / Linux（bash）**
+
+```bash
+azd env get-value "AGENT_RESEARCH_AGENT_${STUDENT_SUFFIX}_RESPONSES_ENDPOINT"
+# 或直接用脚本
+../scripts/macOSLinux/invoke-hosted.sh --agent-name "research-agent-${STUDENT_SUFFIX}" --prompt "ping"
 ```
 
 返回 JSON 含 `output_text` 即 OK.
@@ -162,8 +205,16 @@ azd env get-value AGENT_RESEARCH_AGENT_${env:STUDENT_SUFFIX}_RESPONSES_ENDPOINT
 
 ## 1.8 自检
 
+**Windows（PowerShell）**
+
 ```powershell
-..\scripts\sanity-check.ps1
+..\scripts\Windows\sanity-check.ps1
+```
+
+**macOS / Linux（bash）**
+
+```bash
+../scripts/macOSLinux/sanity-check.sh
 ```
 
 应输出:
@@ -183,8 +234,8 @@ azd env get-value AGENT_RESEARCH_AGENT_${env:STUDENT_SUFFIX}_RESPONSES_ENDPOINT
 ## 1.9 出口检查点
 
 ✅ `azd deploy` 完成,无错
-✅ `invoke-hosted.ps1` 返回 200,JSON 含 `output_text`
-✅ `sanity-check.ps1` 全 ✅
+✅ `invoke-hosted.ps1` / `invoke-hosted.sh` 返回 200,JSON 含 `output_text`
+✅ `sanity-check.ps1` / `sanity-check.sh` 全 ✅
 
 ## 1.10 故障速查
 

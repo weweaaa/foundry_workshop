@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Workshop Observability · Foundry Operational Metrics</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
-<!-- Data file written by fetch-traces.ps1. Loaded as a <script> instead of via fetch()
+    <!-- Data file written by fetch-traces.ps1 (Windows) or fetch-traces.sh (macOS / Linux). Loaded as a <script> instead of via fetch()
      so that file:// works without a local HTTP server (no CORS). -->
 <script src="data/my-metrics.js" onerror="window.__METRICS_MISSING__ = true"></script>
 <style>
@@ -54,8 +54,12 @@
     <h2 style="color: var(--warn)">没有 data/my-metrics.js</h2>
     <p>先在 Lab-2-vibe-coding 跑几条对话, 然后:</p>
     <pre><code>cd Lab-2-vibe-coding
-..\scripts\invoke-hosted.ps1 -Prompt "..."           # 任意 prompt, emit AgentResponses
-..\Lab-4-observability\fetch-traces.ps1 -Minutes 60  # 拉 Monitor metrics → my-metrics.js
+# Windows:
+..\scripts\Windows\invoke-hosted.ps1 -Prompt "..."          # 任意 prompt, emit AgentResponses
+..\Lab-4-observability\fetch-traces.ps1 -Minutes 60         # 拉 Monitor metrics → my-metrics.js
+# macOS / Linux:
+../scripts/macOSLinux/invoke-hosted.sh --prompt "..."
+../Lab-4-observability/fetch-traces.sh --minutes 60
 # 再刷新本页面 (按右上 刷新 按钮 或 F5)</code></pre>
     <p style="font-size: 11px; margin-top: 16px">注: Azure Monitor 约 1-2 min 摄入延迟, 调用刚发完先等一下再 fetch-traces。</p>
   </div>

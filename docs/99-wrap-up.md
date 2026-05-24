@@ -62,9 +62,19 @@
 
 讲师在工作坊结束 7 天后会统一清理学员 SP。你也可以主动放手:
 
+**Windows(PowerShell)**
+
 ```powershell
 # 删掉自己的 hosted agent(共享 project 上的 agent 实例)
-azd ai agent delete research-agent-${STUDENT_SUFFIX}
+azd ai agent delete research-agent-${env:STUDENT_SUFFIX}
+# 或者用 az CLI 直接调 Foundry data plane
+```
+
+**macOS / Linux(bash)**
+
+```bash
+# 删掉自己的 hosted agent(共享 project 上的 agent 实例)
+azd ai agent delete "research-agent-${STUDENT_SUFFIX}"
 # 或者用 az CLI 直接调 Foundry data plane
 ```
 

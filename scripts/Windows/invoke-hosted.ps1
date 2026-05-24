@@ -15,10 +15,10 @@
     关掉 store (默认 store=true)。关掉以后 Lab 4 dashboard 拿不到这次 trace 详情。
 
 .EXAMPLE
-    ..\scripts\invoke-hosted.ps1 -AgentName research-agent-stu05 -Prompt "ping"
+    ..\scripts\Windows\invoke-hosted.ps1 -AgentName research-agent-stu05 -Prompt "ping"
 
 .EXAMPLE
-    ..\scripts\invoke-hosted.ps1 -AgentName research-agent-stu05 -StatusOnly
+    ..\scripts\Windows\invoke-hosted.ps1 -AgentName research-agent-stu05 -StatusOnly
 #>
 [CmdletBinding()]
 param(
@@ -35,7 +35,7 @@ $ErrorActionPreference = 'Stop'
 $ApiVersion = '2025-11-15-preview'
 
 # Load .env
-if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\.env' }
+if (-not $EnvFile) { $EnvFile = Join-Path $PSScriptRoot '..\..\.env' }
 $envFromFile = @{}
 if (Test-Path $EnvFile) {
     Get-Content $EnvFile | ForEach-Object {
@@ -107,7 +107,7 @@ try {
     $resp | ConvertTo-Json -Depth 10
 
     if ($store -and $resp.id) {
-        $traceDir = Join-Path $PSScriptRoot '..\Lab-4-observability\data'
+        $traceDir = Join-Path $PSScriptRoot '..\..\Lab-4-observability\data'
         if (-not (Test-Path $traceDir)) { New-Item -ItemType Directory -Path $traceDir -Force | Out-Null }
         $jsonl = Join-Path $traceDir 'responses.jsonl'
         $entry = [ordered]@{

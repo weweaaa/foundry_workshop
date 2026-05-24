@@ -6,6 +6,8 @@
 
 ## 🚀 30 秒上手
 
+**Windows（PowerShell）**
+
 ```powershell
 # 1. clone
 git clone https://github.com/haxudev/foundry_workshop.git
@@ -23,7 +25,30 @@ code Lab-3-update-hosted-agent\README.md
 code Lab-4-observability\HANDBOOK.md
 ```
 
-学员只需要 `.env` 一份，所有脚本（`scripts/chat-hosted.ps1`、`scripts/invoke-hosted.ps1`、`scripts/sanity-check.ps1`、`Lab-4-observability/fetch-traces.ps1`）都从仓库根 `.env` 自动读凭据，**不依赖 `az login` 或 `azd auth`**（脚本内部走 OAuth2 client_credentials grant 拿 token）。
+**macOS / Linux（bash）**
+
+```bash
+# 1. clone
+git clone https://github.com/haxudev/foundry_workshop.git
+cd foundry_workshop
+
+# 2. 一次性填好凭据 (整个 workshop 共用这一份 .env)
+cp .env.example .env
+${EDITOR:-nano} .env              # 把讲师下发的 SP + endpoint + ACR 名填进去
+
+# 3. 按 Lab 顺序往下走
+code Lab-0-setup/README.md       # Lab 0: 环境 + Copilot + 登录
+code Lab-1-deploy-hosted-agent/README.md
+code Lab-2-vibe-coding/HANDBOOK.md
+code Lab-3-update-hosted-agent/README.md
+code Lab-4-observability/HANDBOOK.md
+```
+
+学员只需要 `.env` 一份，所有脚本都从仓库根 `.env` 自动读凭据，**不依赖 `az login` 或 `azd auth`**（脚本内部走 OAuth2 client_credentials grant 拿 token）。
+
+- Windows 用 [`scripts/Windows/*.ps1`](scripts/Windows/)（PowerShell 7 / 5.1 都能跑）
+- macOS / Linux 用 [`scripts/macOSLinux/*.sh`](scripts/macOSLinux/)（bash 3.2+，macOS 默认 shell 即可，依赖 `curl` + `jq`）
+- Lab 4 的 `fetch-traces.*` 两个平台都有原生版：Windows 用 [`Lab-4-observability/fetch-traces.ps1`](Lab-4-observability/fetch-traces.ps1)，macOS / Linux 用 [`Lab-4-observability/fetch-traces.sh`](Lab-4-observability/fetch-traces.sh)
 
 ## 🗺️ 目录结构
 
@@ -32,14 +57,23 @@ foundry_workshop/
 ├── README.md                              # ← 你正在看
 ├── .env.example                           # 一次性填，整个 workshop 用
 │
-├── scripts/                               # 跨 Lab 共享脚本
-│   ├── load-env.ps1                       # 把 .env 加载进 PS process
-│   ├── sanity-check.ps1                   # 验证 .env + 凭据 + 共享 Foundry 资源
-│   ├── chat-hosted.ps1                    # 浏览器图形化跟 hosted agent 聊天 (Lab 1/3)
-│   ├── chat-hosted/index.html             #   ↑ 单文件 chat UI
-│   ├── invoke-hosted.ps1                  # 命令行单次 POST /responses (CI/脚本用)
-│   ├── install-maf-copilot-skills.ps1     # Lab 0: 启用 VS Code Copilot customization
-│   └── lint-persona.py                    # Lab 2: 校验 persona frontmatter
+├── scripts/                               # 跨 Lab 共享脚本 (Windows + macOS/Linux 两套)
+│   ├── Windows/                           #   PowerShell (*.ps1) — PS 7 / 5.1 都能跑
+│   │   ├── load-env.ps1
+│   │   ├── sanity-check.ps1
+│   │   ├── chat-hosted.ps1
+│   │   ├── invoke-hosted.ps1
+│   │   ├── grant-agent-runtime-roles.ps1  #   azd deploy postdeploy 钩子
+│   │   └── install-maf-copilot-skills.ps1
+│   ├── macOSLinux/                        #   bash (*.sh) — bash 3.2+, 依赖 curl + jq
+│   │   ├── load-env.sh
+│   │   ├── sanity-check.sh
+│   │   ├── chat-hosted.sh
+│   │   ├── invoke-hosted.sh
+│   │   ├── grant-agent-runtime-roles.sh
+│   │   └── install-maf-copilot-skills.sh
+│   ├── chat-hosted/index.html             #   单文件 chat UI (被 chat-hosted.* 加载)
+│   └── lint-persona.py                    #   Lab 2: 跨平台 persona frontmatter 校验
 │
 ├── Lab-0-setup/                           # 环境 + Copilot + 凭据登录
 │   └── README.md
@@ -81,7 +115,8 @@ foundry_workshop/
 │   ├── README.md
 │   ├── HANDBOOK.md
 │   ├── index.html
-│   ├── fetch-traces.ps1
+│   ├── fetch-traces.ps1                    # Windows
+│   ├── fetch-traces.sh                     # macOS / Linux (bash + curl + jq)
 │   └── data/traces.sample.json
 │
 ├── docs/                                  # 跨 Lab 速查 / 总览
@@ -100,13 +135,13 @@ foundry_workshop/
 1. 用 `azd deploy` 把一个 Foundry hosted agent 部署到共享 project（占位 → 自己业务两阶段）
 2. 用 GitHub Copilot（VS Code Chat 或 Copilot CLI 二选一）+ 仓库自带的 skill 套件写出 **Soul + Skills + Tools** 三件套，本地直接 `python -m src.research_agent.main` 跑通
 3. 把本地业务 agent 增量推回 hosted slot，hosted endpoint 200 OK
-4. **不登 Azure Portal、也不需要 az CLI**：用 `scripts/chat-hosted.ps1` 浏览器多轮聊；用 `Lab-4-observability/fetch-traces.ps1` + 本地 HTML 看 trace
+4. **不登 Azure Portal、也不需要 az CLI**：用 `scripts/Windows/chat-hosted.ps1`（或 `scripts/macOSLinux/chat-hosted.sh`）浏览器多轮聊；用 `Lab-4-observability/fetch-traces.ps1`（或 `Lab-4-observability/fetch-traces.sh`）+ 本地 HTML 看 trace
 
 ## 🛠️ Copilot 双环境兼容
 
 | 环境 | 配置 | 入口 |
 |------|------|------|
-| VS Code Copilot Chat | Lab 0 跑 `scripts\install-maf-copilot-skills.ps1` 启用 `Lab-2-vibe-coding/.github/{chatmodes,instructions,prompts}/` | `Ctrl+Alt+I` 选 `maf-agent` chatmode + 斜杠命令 `/persona` `/skill` `/tool` `/deploy` |
+| VS Code Copilot Chat | Lab 0 跑 `scripts\Windows\install-maf-copilot-skills.ps1`（macOS / Linux：`scripts/macOSLinux/install-maf-copilot-skills.sh`）启用 `Lab-2-vibe-coding/.github/{chatmodes,instructions,prompts}/` | `Ctrl+Alt+I` 选 `maf-agent` chatmode + 斜杠命令 `/persona` `/skill` `/tool` `/deploy` |
 | GitHub Copilot CLI | `gh extension install github/gh-copilot` | `gh copilot suggest "<prompt>"` / `gh copilot explain "<command>"` |
 
 两种环境都能用仓库根 `.agents/skills/` 下的 4 个微软官方 skill 作为知识库：
@@ -131,7 +166,7 @@ foundry_workshop/
 
 ## 🆘 卡住了怎么办
 
-- 每个 Lab 都有出口检查脚本：`scripts\sanity-check.ps1` 全 ✅ 才继续
+- 每个 Lab 都有出口检查脚本：Windows 跑 `scripts\Windows\sanity-check.ps1`，macOS / Linux 跑 `scripts/macOSLinux/sanity-check.sh`，全 ✅ 才继续
 - 助教巡场，白板上贴 `#help-lab-N` 即可
 - 极端兜底：`Lab-4-observability/data/traces.sample.json` 是讲师 demo，HTML 默认就显示它
 
