@@ -1,253 +1,202 @@
-# Lab 0 · 本地环境 + Copilot + 讲师凭据登录(20 min)
+# Lab 0 · 本地环境 + 凭据 + Copilot（10 min）
 
 ## 0.1 目标
 
-- 工具链(git / azd / az / Python / Docker / VS Code 或终端 / Copilot)就绪
-- 用**讲师下发的 SP 凭据**登录 azd / az
-- 启用 Copilot:VS Code Copilot Chat **或** GitHub Copilot CLI(二选一)
-- 确认 `.agents/skills/` 下的微软官方 skill 可被 Copilot 识别
+- 工具链就绪：git、azd、Python、VS Code 或终端、GitHub Copilot。
+- 在仓库根目录创建并填写唯一的 `.env`。
+- 用讲师下发的服务主体登录 `azd`，为 Lab 1/3 的 `azd deploy` 做准备。
+- 启用 VS Code Copilot customization；终端 `copilot` TUI 只作为可选路径。
 
-> 共享 Foundry 资源(account / project / 模型 / ACR)已由讲师在配套仓库中预部署。学员**没有权限**自己创建,直接用讲师下发的凭据接入即可。
+> 学员不创建 Foundry / 模型 / ACR。共享资源由讲师预部署；你只部署自己的 `research-agent-<STUDENT_SUFFIX>`。
 
-## 0.2 工具最低版本
+## 0.2 Agent-driven 跑法
+
+本 Lab 的目标不是记住所有工具命令，而是让 Copilot 帮你判断“这台机器能不能进入 Lab 1”。建议先在 Copilot Chat 里发：
+
+```text
+@workspace 我正在做 Lab 0。请阅读 #file:Lab-0-setup/README.md、#file:.env.example、#file:scripts/Windows/sanity-check.ps1 和 #file:scripts/macOSLinux/sanity-check.sh。
+请帮我列出：需要我手工确认的凭据、你可以运行的检查、以及进入 Lab 1 的完成信号。
+```
+
+| 人类负责 | Copilot coding agent 负责 | 完成信号 |
+|----------|---------------------------|----------|
+| 从讲师处拿到凭据，决定走 VS Code 还是 CLI | 对照 `.env.example` 检查字段、解释脚本输出、归因工具链问题 | `.env` 完整、`azd auth login --check-status` 通过、Copilot 路径可用 |
+
+如果 Copilot 要运行命令，优先让它运行本节后面的真实命令；不要让它生成新的登录脚本或改动凭据文件格式。
+
+## 0.3 工具最低要求
 
 **Windows（PowerShell）**
 
 ```powershell
-azd version          # ≥ 1.21.3
-az version           # ≥ 2.55
-python --version     # ≥ 3.11
-docker version       # 可选 (本工作坊走 ACR remote build;本地有 Docker 更方便)
-gh --version         # 任意 (用 Copilot CLI 必装)
-code --version       # 用 VS Code 路径必装
+git --version
+azd version          # >= 1.21.3
+python --version     # >= 3.11
+code --version       # 走 VS Code 路径需要
+Get-Command copilot  # 走 Copilot TUI 可选路径需要
 ```
 
 **macOS / Linux（bash）**
 
 ```bash
-azd version          # ≥ 1.21.3
-az version           # ≥ 2.55
-python3 --version    # ≥ 3.11
-docker version       # 可选
-gh --version         # 任意 (Copilot CLI 必装)
-code --version       # 用 VS Code 路径必装
-jq --version         # bash 脚本依赖；macOS：`brew install jq`；Ubuntu：`apt-get install jq`
+git --version
+azd version          # >= 1.21.3
+python3 --version    # >= 3.11
+code --version       # 走 VS Code 路径需要
+command -v copilot   # 走 Copilot TUI 可选路径需要
+jq --version         # bash 脚本需要；macOS: brew install jq；Ubuntu: apt-get install jq
 ```
 
-不达标 → 举手 `#help-lab-0`。
+说明：
 
-## 0.3 从讲师处领凭据
+- 本工作坊使用 ACR remote build，学员本机**不需要 Docker / Podman**。
+- `az` CLI 只作为排障工具，不是主路径；脚本和 Lab 4 都直接用 REST/OAuth2。
 
-开课前讲师会给你这些字段(信封 / 飞书私信 / 邮件均可):
+## 0.4 Clone 仓库并填写 `.env`
 
-```
-AZURE_TENANT_ID                = <tenant guid>
-AZURE_SUBSCRIPTION_ID          = <sub guid>
-AZURE_CLIENT_ID                = <学员 SP appId>
-AZURE_CLIENT_SECRET            = <学员 SP secret>
-
-AZURE_AI_PROJECT_ENDPOINT      = https://<account>.services.ai.azure.com/api/projects/<project>
-AZURE_AI_MODEL_DEPLOYMENT_NAME = gpt-5-mini             # 或讲师指定的
-AZURE_CONTAINER_REGISTRY_NAME  = cr<token>
-AZURE_CONTAINER_REGISTRY_ENDPOINT = cr<token>.azurecr.io
-
-STUDENT_SUFFIX                 = stuNN                  # 你的专属后缀,决定 hosted agent 名
+```powershell
+git clone https://github.com/haxudev/foundry_workshop.git
+cd foundry_workshop
+Copy-Item .env.example .env
+notepad .env
 ```
 
-GitHub Copilot 订阅 / trial 激活信息也找讲师拿。
+```bash
+git clone https://github.com/haxudev/foundry_workshop.git
+cd foundry_workshop
+cp .env.example .env
+${EDITOR:-nano} .env
+```
 
-## 0.4 SP 登录(azd + az 都要登)
+讲师会提供这些字段：
+
+```text
+AZURE_TENANT_ID
+AZURE_SUBSCRIPTION_ID
+AZURE_CLIENT_ID
+AZURE_CLIENT_SECRET
+AZURE_LOCATION
+
+AZURE_AI_PROJECT_ENDPOINT
+AZURE_AI_PROJECT_ID
+AZURE_AI_MODEL_DEPLOYMENT_NAME
+FOUNDRY_API_KEY
+
+AZURE_CONTAINER_REGISTRY_NAME
+AZURE_CONTAINER_REGISTRY_ENDPOINT
+STUDENT_SUFFIX
+```
+
+让 Copilot 做一次字段完整性检查，但不要把 secret 贴进聊天。可以问：
+
+```text
+@workspace 只根据 #file:.env.example 的字段名，检查我的 .env 是否应该包含哪些 key；不要要求我粘贴 secret 值。
+```
+
+## 0.5 登录 azd（部署专用）
 
 **Windows（PowerShell）**
 
 ```powershell
-$AppId   = "<AZURE_CLIENT_ID>"
-$Secret  = "<AZURE_CLIENT_SECRET>"
-$TenId   = "<AZURE_TENANT_ID>"
-$SubId   = "<AZURE_SUBSCRIPTION_ID>"
-
-# 1. azd 登录(注意必须用 `=`，否则 PS5.1 在 secret 含 `-` `s` 等字符时会把它当下个参数前缀吞掉)
-azd auth login --client-id $AppId --tenant-id $TenId --client-secret=$Secret
-
-# 2. az 登录(azd 内部 hook 还会调 az)
-az login --service-principal -u $AppId "--password=$Secret" --tenant $TenId | Out-Null
-az account set --subscription $SubId
-
-# 3. azd 默认订阅
-azd config set defaults.subscription $SubId
+. .\scripts\Windows\load-env.ps1
+azd auth login --client-id $env:AZURE_CLIENT_ID --tenant-id $env:AZURE_TENANT_ID --client-secret=$env:AZURE_CLIENT_SECRET
+azd config set defaults.subscription $env:AZURE_SUBSCRIPTION_ID
+azd auth login --check-status
 ```
-
-> ⚠️ PowerShell 转义:secret 含 `$` `!` 空格等用双引号;含 `"` 用反引号 `` ` `` 转义。详见 [`cheatsheet-powershell.md`](../docs/cheatsheet-powershell.md)。
 
 **macOS / Linux（bash）**
 
 ```bash
-APP_ID="<AZURE_CLIENT_ID>"
-SECRET="<AZURE_CLIENT_SECRET>"
-TEN_ID="<AZURE_TENANT_ID>"
-SUB_ID="<AZURE_SUBSCRIPTION_ID>"
-
-# 1. azd 登录
-azd auth login --client-id "$APP_ID" --tenant-id "$TEN_ID" --client-secret "$SECRET"
-
-# 2. az 登录
-az login --service-principal -u "$APP_ID" -p "$SECRET" --tenant "$TEN_ID" >/dev/null
-az account set --subscription "$SUB_ID"
-
-# 3. azd 默认订阅
-azd config set defaults.subscription "$SUB_ID"
+source scripts/macOSLinux/load-env.sh
+azd auth login --client-id "$AZURE_CLIENT_ID" --tenant-id "$AZURE_TENANT_ID" --client-secret "$AZURE_CLIENT_SECRET"
+azd config set defaults.subscription "$AZURE_SUBSCRIPTION_ID"
+azd auth login --check-status
 ```
 
-> ⚠️ bash 转义：secret 含 `$` `!` `\` 空格等一律用**单引号**包，避免双引号被 shell 插值；例：`SECRET='P@ss!w0rd$xyz'`。
+> 不需要 `az login`。如果后续手动使用 `az` 排障，再按需登录即可。
 
-## 0.5 安装 azd ai agent 扩展
+## 0.6 安装 azd ai agent 扩展
 
 ```powershell
 azd extension install azure.ai.agents
 azd extension list
 ```
 
-## 0.6 Clone workshop 仓库
+确认列表里有 `azure.ai.agents`。
 
-```powershell
-git clone https://github.com/<org>/foundry-workshop.git
-cd foundry-workshop\workshop
-git checkout lab-0-ready    # 把你拉到 Lab 0 起点
-```
+## 0.7 启用 Copilot（二选一）
 
-## 0.7 启用 Copilot(二选一)
-
-### 路径 A · VS Code Copilot Chat(推荐)
+### 路径 A · VS Code Copilot Chat（推荐）
 
 **Windows（PowerShell）**
 
 ```powershell
 .\scripts\Windows\install-maf-copilot-skills.ps1
+cd Lab-2-vibe-coding
+code .
 ```
 
 **macOS / Linux（bash）**
 
 ```bash
 ./scripts/macOSLinux/install-maf-copilot-skills.sh
-```
-
-脚本会:
-
-1. 检查 VS Code + Copilot/Copilot Chat 扩展。
-2. 写 `Lab-2-vibe-coding/.vscode/settings.json` 开启 chatmodes / instructions / prompts 装载。
-3. 打印每个 customization 文件的入口(哪个文件、Chat 里怎么触发)。
-
-完成后:
-
-```powershell
 cd Lab-2-vibe-coding
 code .
-# Ctrl+Alt+I 打开 Copilot Chat
-# 顶部下拉应该能看到 "maf-agent" chatmode
-# 输入 /persona / /tool / /skill / /deploy 试试斜杠命令
 ```
 
-**确认 `.agents/skills/` 也被识别**:在 Copilot Chat 输入:
+在 VS Code 中打开 Copilot Chat，顶部选择 `maf-agent` chatmode。试输入：
 
+```text
+@workspace 列出当前 workshop 支持哪些 Copilot prompts 和 skills
 ```
-@workspace 列出当前 workspace 已激活的 skills
-```
 
-应能看到 `microsoft-foundry`、`agent-framework-azure-ai-py`、`azure-ai-projects-py`、`skill-creator` 这 4 个。
-
-### 路径 B · GitHub Copilot CLI
-
-**Windows（PowerShell）**
+### 路径 B · Copilot TUI（可选）
 
 ```powershell
-# 装 gh-copilot 扩展
-gh extension install github/gh-copilot
-
-# 验证
-gh copilot suggest "list azure resource groups in current sub"
+copilot
 ```
 
-**macOS / Linux（bash）**
+进入 chat 后输入：
 
-```bash
-# 装 gh-copilot 扩展
-gh extension install github/gh-copilot
-
-# 验证
-gh copilot suggest "list azure resource groups in current sub"
+```text
+请根据当前目录解释这个 workshop 的 Lab 0 readiness check；如果需要上下文，我会粘贴 README 或脚本片段。
 ```
 
-CLI 不会自动读 `.agents/skills/`。需要 skill 知识时,用 cheat sheet 里的模式手动拼接:
+TUI 路径不会像 VS Code Copilot Chat 一样自动使用 `maf-agent` chatmode、instructions 和 slash prompts。需要 Foundry 或 Agent Framework 背景时，把对应 `SKILL.md` 或 `.github/prompts/*.prompt.md` 内容粘进 chat。Copilot 提示语速查已合并到 [`../README.md`](../README.md#速查卡)。
 
-**Windows（PowerShell）**
-
-```powershell
-$ctx = Get-Content .agents\skills\microsoft-foundry\SKILL.md -Raw
-gh copilot suggest "$ctx`n`n基于上面的 skill 内容回答: 我如何确认共享 Foundry project 上是否有名为 research-agent-stu07 的 hosted agent?"
-```
-
-**macOS / Linux（bash）**
-
-```bash
-ctx=$(cat .agents/skills/microsoft-foundry/SKILL.md)
-gh copilot suggest "$ctx"$'\n\n'"基于上面的 skill 内容回答: 我如何确认共享 Foundry project 上是否有名为 research-agent-stu07 的 hosted agent?"
-```
-
-详见 [`cheatsheet-copilot.md`](../docs/cheatsheet-copilot.md)。
-
-## 0.8 把讲师凭据写入本地 .env
-
-**Windows（PowerShell）**
-
-```powershell
-cd Lab-2-vibe-coding
-Copy-Item .env.example .env
-# 用 notepad 打开 .env,逐行填入讲师给你的字段
-notepad .env
-```
-
-**macOS / Linux（bash）**
-
-```bash
-cd Lab-2-vibe-coding
-cp .env.example .env
-# 用你的默认编辑器打开 .env,逐行填入讲师给你的字段
-${EDITOR:-nano} .env
-```
-
-## 0.9 出口检查点
-
-**Windows（PowerShell）**
+## 0.8 出口检查点
 
 ```powershell
 azd auth login --check-status
-if ($LASTEXITCODE -eq 0) { Write-Host "✅ azd OK" } else { Write-Host "❌ azd NOT logged in" }
-az account show --query name -o tsv
+.\scripts\Windows\sanity-check.ps1
 ```
-
-**macOS / Linux（bash）**
 
 ```bash
-azd auth login --check-status && echo "✅ azd OK" || echo "❌ azd NOT logged in"
-az account show --query name -o tsv
+azd auth login --check-status
+./scripts/macOSLinux/sanity-check.sh
 ```
 
-✅ `azd auth login --check-status` 退出码 0
-✅ `az account show` 输出当前订阅名
-✅ Copilot 路径 A:VS Code Copilot 图标常亮 + Chat 顶部可选 `maf-agent`
-✅ Copilot 路径 B:`gh copilot suggest "ping"` 能返回建议
-✅ `.env` 已填好
+继续 Lab 1 前确认：
 
-## 0.10 故障速查
+- `.env` 已填写完整。
+- `azd auth login --check-status` 退出码为 0。
+- 选择的 Copilot 路径可用。
+- `sanity-check.*` 的 `.env` / model / ACR 权限项通过；hosted agent 项在 Lab 1 部署前可能还是失败，属于正常。
+
+把输出交给 Copilot 时，用这个问法收尾：
+
+```text
+这是 Lab 0 readiness check 的输出。请判断我能否进入 Lab 1；如果不能，只列出最小修复步骤，不要建议创建 Azure 资源。
+```
+
+## 0.9 故障速查
 
 | 现象 | 处理 |
 |------|------|
-| `azd auth login` 报 `AADSTS7000215: Invalid client secret` | secret 失效或被特殊字符吃掉,回讲师那确认 |
-| `az login` OK 但 `azd auth login` 失败 | azd 与 az 独立登录态,两边都要登 |
-| `azd extension install` 网络超时 | 切手机热点 / 找助教要离线 nupkg |
-| Copilot 图标灰色 | `Ctrl+Shift+P` → `GitHub Copilot: Sign in` 重登 |
-| Copilot Chat 下拉看不到 `maf-agent` | 重新跑 `install-maf-copilot-skills.ps1`/`.sh`,然后 `Developer: Reload Window` |
-| `gh copilot suggest` 报 `not authenticated` | `gh auth login` → 选 GitHub.com → 用浏览器登录 |
-| `.agents/skills/` 下找不到 skill | 跑 `npx -y skills add microsoft/skills --full-depth --copy -y -a github-copilot -s microsoft-foundry agent-framework-azure-ai-py azure-ai-projects-py skill-creator` 补装 |
+| `azd auth login` 报 `AADSTS7000215` | secret 填错或被 shell 转义；回到 `.env` 对照讲师提供值 |
+| PowerShell secret 含特殊字符登录失败 | 使用 `--client-secret=$env:AZURE_CLIENT_SECRET`，不要写成空格分隔 |
+| `azd extension install` 网络超时 | 换网络，或找助教提供离线扩展包 |
+| Copilot Chat 看不到 `maf-agent` | 重新跑 `install-maf-copilot-skills.*`，然后 `Developer: Reload Window` |
+| `copilot` 命令不存在或要登录 | 优先使用 VS Code 主路径；需要终端路径时找助教完成 Copilot TUI 安装/登录 |
 
-→ [Lab 1 · 部署你的第一个 GPT-5 云端 agent](../Lab-1-deploy-hosted-agent/README.md)
+→ [Lab 1 · 首次部署 hosted agent](../Lab-1-deploy-hosted-agent/README.md)

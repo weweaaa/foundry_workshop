@@ -20,12 +20,12 @@ scripts/
 | 启用 VS Code Copilot 的 chatmodes/instructions/prompts；打印 skill 入口 | Lab 0 | [`Windows/install-maf-copilot-skills.ps1`](./Windows/install-maf-copilot-skills.ps1) | [`macOSLinux/install-maf-copilot-skills.sh`](./macOSLinux/install-maf-copilot-skills.sh) |
 | 把 workshop 根 `.env` 加载进当前 shell（其它脚本被调时也会自动跑一次） | 全部 | [`Windows/load-env.ps1`](./Windows/load-env.ps1) | [`macOSLinux/load-env.sh`](./macOSLinux/load-env.sh) |
 | 验证 `.env` / SP 凭据 / 共享 Foundry / hosted agent 可达 / ACR 推送权限 | Lab 1 / Lab 3 | [`Windows/sanity-check.ps1`](./Windows/sanity-check.ps1) | [`macOSLinux/sanity-check.sh`](./macOSLinux/sanity-check.sh) |
-| api-key 调 hosted agent `/responses` + 落 `response_id` 到 Lab 4 trace 索引；`--status-only` 只看可达 | Lab 1 / Lab 3 / Lab 4 | [`Windows/invoke-hosted.ps1`](./Windows/invoke-hosted.ps1) | [`macOSLinux/invoke-hosted.sh`](./macOSLinux/invoke-hosted.sh) |
+| api-key 调 hosted agent `/responses` + 落 `response_id` 到 Lab 4 索引；`--status-only` 只看可达 | Lab 1 / Lab 3 / Lab 4 | [`Windows/invoke-hosted.ps1`](./Windows/invoke-hosted.ps1) | [`macOSLinux/invoke-hosted.sh`](./macOSLinux/invoke-hosted.sh) |
 | 打开本地浏览器图形 chat UI（api-key 模式，URL 反复用） | Lab 1 / Lab 3 | [`Windows/chat-hosted.ps1`](./Windows/chat-hosted.ps1) | [`macOSLinux/chat-hosted.sh`](./macOSLinux/chat-hosted.sh) |
 | `azd deploy` postdeploy 钩子：给 agent per-version MI 授 AcrPull + Azure AI User | Lab 1 / Lab 3（自动） | [`Windows/grant-agent-runtime-roles.ps1`](./Windows/grant-agent-runtime-roles.ps1) | [`macOSLinux/grant-agent-runtime-roles.sh`](./macOSLinux/grant-agent-runtime-roles.sh) |
 | 校验 persona frontmatter / `{{include}}` 引用 / 必备 section | Lab 2 | [`lint-persona.py`](./lint-persona.py)（共用） | [`lint-persona.py`](./lint-persona.py)（共用） |
 
-> Lab 4 的 `fetch-traces.*`（调 Foundry Monitor metrics 拉本人 agent 的 trace）单独放在 [`Lab-4-observability/`](../Lab-4-observability/) 下，与 HTML 在一起：Windows 用 `fetch-traces.ps1`，macOS / Linux 用 `fetch-traces.sh`（依赖 `curl` + `jq`）。
+> Lab 4 的 `fetch-traces.*`（调 Azure Monitor metrics，生成 `data/my-metrics.js`）单独放在 [Lab-4-observability/README.md](../Lab-4-observability/README.md) 所在目录，与 HTML 在一起：Windows 用 `fetch-traces.ps1`，macOS / Linux 用 `fetch-traces.sh`（依赖 `curl` + `jq`）。
 
 ## 用法示例
 

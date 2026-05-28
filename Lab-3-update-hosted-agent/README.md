@@ -1,93 +1,66 @@
-# Lab 3 · 把本地业务 agent 推到 Foundry hosted(25 min)
+# Lab 3 · 把本地业务 agent 更新到 Foundry hosted（10 min）
 
-Lab 1 部了 Foundry 给的 placeholder agent;Lab 2 你在本地写好了 `src/research_agent/`(或你自己的业务 agent)。本 Lab 把本地代码增量推回 Foundry,**替换** Lab 1 的 placeholder。
+Lab 2 中你已经在本地调试了 `src/research_agent/`，或创建了自己的业务 agent。本 Lab 将修改后的代码重新发布到共享 Foundry project。
 
 ## 3.1 目标
 
-- 理解 `agent.yaml`(部署元数据)vs `agent.manifest.yaml`(运行时配置)的分工
-- 用 `azd ai agent init -m src/<agent>/agent.manifest.yaml` 注册本地 agent 进 `azure.yaml`
-- `azd deploy <agent>` 增量发布(不需要任何 infra)
-- 用 hosted endpoint 验证业务
+- 理解 `agent.yaml` 与 `agent.manifest.yaml` 的分工。
+- 确认 `azure.yaml` 指向要发布的 agent。
+- 用 `azd deploy research-agent` 增量发布。
+- 用 hosted endpoint 验证业务输出。
 
-## 3.2 配合 Copilot
+## 3.2 Agent-driven 发布方式
 
-| 任务 | VS Code 走法 | Copilot CLI 走法 |
-|------|------------|------|
-| 生成 / 修 agent.yaml + manifest | `/deploy agentDir=… agentDeployName=…` | 复制 `Lab-2-vibe-coding/.github/prompts/deploy.prompt.md` 的模板 → `gh copilot suggest` |
-| 部署失败排查 | `@workspace 这是 azd deploy 报错…(粘错误)` | `gh copilot explain "<错误>"` |
-| Foundry 端的 RBAC / 配额 / 区域问题 | 关键词命中后自动加载 `.agents/skills/microsoft-foundry/` 的 `rbac/`、`quota/`、`models/` | 把对应子目录的 `.md` 拼到 prompt context |
+Lab 3 的核心不是“再跑一次 deploy”，而是把 Lab 2 的本地产物安全发布到 hosted slot。先让 Copilot 做一次只读 release review：
+
+```text
+@workspace 我正在做 Lab 3。请阅读 #file:Lab-2-vibe-coding/azure.yaml、#file:Lab-2-vibe-coding/src/research_agent/agent.yaml、#file:Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml、#file:Lab-2-vibe-coding/src/research_agent/main.py 和 #file:Lab-2-vibe-coding/personas/research-agent.md。
+请检查 local artifact 到 hosted agent 的发布链路，指出部署前必须确认的 5 件事；不要修改文件。
+```
+
+| 人类负责 | Copilot coding agent 负责 | 完成信号 |
+|----------|---------------------------|----------|
+| 确认 Lab 2 的业务行为已经验收，允许覆盖自己的 hosted agent | 检查 yaml alignment、解释 deploy 影响、归因 hosted 调用错误 | hosted `/responses` 返回更新后的业务 JSON，guardrail 仍生效 |
 
 ## 3.3 两个 yaml 的分工
 
-| 文件 | 回答什么问题 | 谁读 |
-|------|------------|------|
-| `agent.yaml` | "Foundry 怎么部署我?" kind / host / 语言 / 资源 / 环境变量 / scale | `azd ai agent init` / Foundry control plane(部署时) |
-| `agent.manifest.yaml` | "我运行时要什么模型 + server-side tools?" | Foundry control plane(运行时) |
+| 文件 | 解决什么问题 | 主要字段 |
+|------|--------------|----------|
+| `src/research_agent/agent.yaml` | Foundry 如何托管容器 | `kind: hosted`、`protocols`、`resources`、`environment_variables` |
+| `src/research_agent/agent.manifest.yaml` | agent 运行时用什么模型和 server-side tools | `model`、`instructions.file`、`tools` |
+| `azure.yaml` | azd 如何构建并发布 service | `host: azure.ai.agent`、`docker.remoteBuild: true`、postdeploy hook |
 
-研究 agent 用例:`src/research_agent/agent.yaml` + `src/research_agent/agent.manifest.yaml` 都已经写好。
+默认 `research-agent` 已经配置好。自带业务时，可用 Copilot `/deploy` 生成新目录的两个 yaml，再把 `azure.yaml.services` 指向新 service。
 
-## 3.4 用 Copilot 检查 / 生成 yaml
+## 3.4 配合 Copilot 检查部署配置
 
-VS Code:
+VS Code：
 
-```
-/deploy agentDir=research_agent agentDeployName=research-agent-${STUDENT_SUFFIX}
-```
-
-或自带业务:
-
-```
-/deploy agentDir=my_agent agentDeployName=invoice-explainer-${STUDENT_SUFFIX}
+```text
+@workspace 检查 #file:azure.yaml #file:src/research_agent/agent.yaml #file:src/research_agent/agent.manifest.yaml 是否适合部署到共享 Foundry project；不要创建 infra，不要本地 Docker build。
 ```
 
-Copilot 会按 `.github/prompts/deploy.prompt.md` 重写两个 yaml,并保证:
+Copilot TUI（可选）：启动 `copilot` 进入 chat 后粘贴下面这段：
 
-- `kind: hosted`,`host: azure.ai.agent`,`docker.remoteBuild: true`
-- 资源 cpu 1 / memory 2Gi,scale 1-3
-- env: `AZURE_AI_PROJECT_ENDPOINT / AZURE_AI_MODEL_DEPLOYMENT_NAME / AGENT_NAME / STUDENT_SUFFIX`
-- `model: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}`(不写死,引用预部署 deployment)
+```text
+检查 Lab-2-vibe-coding 的 azure.yaml、src/research_agent/agent.yaml、src/research_agent/agent.manifest.yaml。
+要求: host=azure.ai.agent, docker.remoteBuild=true, model 用 ${AZURE_AI_MODEL_DEPLOYMENT_NAME}, 不包含 infra。
+```
 
-Copilot CLI:
+让 Copilot 输出时要求它按这个格式：
+
+```text
+请按 OK / Risk / Fix 三列列出检查结果。Risk 只包含会影响 azd deploy 或 hosted runtime 的问题。
+```
+
+## 3.5 发布
+
+从 `Lab-2-vibe-coding` 目录执行。
 
 **Windows（PowerShell）**
 
 ```powershell
-$tpl = Get-Content Lab-2-vibe-coding\.github\prompts\deploy.prompt.md -Raw
-$prompt = "$tpl`n`n参数: agentDir=research_agent, agentDeployName=research-agent-`${STUDENT_SUFFIX}"
-gh copilot suggest $prompt
-```
-
-**macOS / Linux（bash）**
-
-```bash
-tpl=$(cat Lab-2-vibe-coding/.github/prompts/deploy.prompt.md)
-prompt="${tpl}"$'\n\n'"参数：agentDir=research_agent, agentDeployName=research-agent-\${STUDENT_SUFFIX}"
-gh copilot suggest "$prompt"
-```
-
-## 3.5 注册进 azd(覆盖 Lab 1 placeholder)
-
-**Windows（PowerShell）**
-
-```powershell
-# 替换 azure.yaml services 中的 placeholder
-azd ai agent init -m src\research_agent\agent.manifest.yaml
-```
-
-**macOS / Linux（bash）**
-
-```bash
-# 替换 azure.yaml services 中的 placeholder
-azd ai agent init -m src/research_agent/agent.manifest.yaml
-```
-
-如果 Lab 1 注入的 `agent-framework-agent-basic-responses` 还在 `azure.yaml.services` 里,手动删掉它,只留 `research-agent` 这一段。
-
-## 3.6 部署
-
-**Windows（PowerShell）**
-
-```powershell
+. ..\scripts\Windows\load-env.ps1
 azd env set AGENT_NAME "research-agent-$env:STUDENT_SUFFIX"
 azd deploy research-agent
 ```
@@ -95,20 +68,16 @@ azd deploy research-agent
 **macOS / Linux（bash）**
 
 ```bash
+source ../scripts/macOSLinux/load-env.sh
 azd env set AGENT_NAME "research-agent-${STUDENT_SUFFIX}"
 azd deploy research-agent
 ```
 
-10 分钟内完成。等待时讲师讲解:
+部署完成后，postdeploy hook 会再次为最新版本的 runtime identities 补齐 `AcrPull` 和 `Azure AI User`。这是每个新版本都需要的步骤，脚本是幂等的。
 
-- **Dockerfile** 必须 `--platform=linux/amd64` —— 已经放在 `src/research_agent/Dockerfile`
-- **server-side tool 声明**:`agent.manifest.yaml.tools[]` 当前只开了 `code_interpreter`;要加 `grounding_with_bing_search` 请取消注释并填 connection id
-- **环境变量自动注入**:`${...}` 由 azd env 在部署时替换
-- **学员后缀**:同一 project 里多个学员的 hosted agent 共存 —— 靠后缀区分
+## 3.6 验证 hosted endpoint
 
-## 3.7 验证 hosted endpoint
-
-**🖥️  图形化多轮对话 (推荐)**
+### 图形化多轮对话（推荐）
 
 **Windows（PowerShell）**
 
@@ -122,72 +91,79 @@ azd deploy research-agent
 ../scripts/macOSLinux/chat-hosted.sh
 ```
 
-在浏览器里跟自己的 agent 多轮聊天 (详见 Lab 1 §1.7). 业务问题示例:
+示例问题：
 
-- "帮我研究'消费级 AI 笔记应用'品类, 2025 重点对比 5 家"
-- "刚才说的第二家, 找两个负面评价"   ← 多轮上下文应该 hit
-- "X 公司值不值得投资?" ← 应该触发 guardrail 拒答
+- `帮我研究'消费级 AI 笔记应用'品类，2025 重点对比 5 家`
+- `刚才说的第二家，找两个负面评价`
+- `X 公司值不值得投资？`（应触发 guardrail 拒答）
 
-**💻  命令行单 prompt (CI / 脚本)**
+### 命令行验证
 
 **Windows（PowerShell）**
 
 ```powershell
 ..\scripts\Windows\invoke-hosted.ps1 `
-    -AgentName "research-agent-$env:STUDENT_SUFFIX" `
-    -Prompt "帮我研究'消费级 AI 笔记应用'品类,2025 重点对比 5 家"
+  -Prompt "帮我研究'消费级 AI 笔记应用'品类，2025 重点对比 5 家"
 ```
 
 **macOS / Linux（bash）**
 
 ```bash
 ../scripts/macOSLinux/invoke-hosted.sh \
-    --agent-name "research-agent-${STUDENT_SUFFIX}" \
-    --prompt "帮我研究《消费级 AI 笔记应用》品类，2025 重点对比 5 家"
+  --prompt "帮我研究《消费级 AI 笔记应用》品类，2025 重点对比 5 家"
 ```
 
-应返回与 Lab 2 本地版本一致的业务 JSON(包含 `report` / `sources` / `confidence`)。trace 会进 Foundry 内置存储,下一 Lab 拉。
+应返回与本地版本一致的业务 JSON。
 
-## 3.8 看 agent 状态
+### Local vs hosted 对比
+
+如果 Lab 2 的本地服务仍在运行，可以让 Copilot 帮你设计同一个 prompt 的对比：
+
+```text
+我想比较本地 http://localhost:8087/responses 和 hosted invoke-hosted 的输出。请给我一组最小验证 prompt：一个成功业务问题、一个多轮上下文问题、一个 guardrail 拒答问题，并说明预期差异。
+```
+
+对比时不要求逐字一致；重点看字段结构、引用策略、拒答边界和 tool 使用意图是否一致。
+
+## 3.7 状态检查
 
 **Windows（PowerShell）**
 
 ```powershell
-..\scripts\Windows\invoke-hosted.ps1 -StatusOnly -AgentName "research-agent-$env:STUDENT_SUFFIX"
-# status=Reachable, http=200, agent=research-agent-stuNN
+..\scripts\Windows\invoke-hosted.ps1 -StatusOnly
+..\scripts\Windows\sanity-check.ps1
 ```
 
 **macOS / Linux（bash）**
 
 ```bash
-../scripts/macOSLinux/invoke-hosted.sh --status-only --agent-name "research-agent-${STUDENT_SUFFIX}"
-# status=Reachable, http=200, agent=research-agent-stuNN
+../scripts/macOSLinux/invoke-hosted.sh --status-only
+../scripts/macOSLinux/sanity-check.sh
 ```
 
-## 3.9 出口检查点
+## 3.8 出口检查点
 
-✅ `azure.yaml` 只剩 `research-agent`(或你的业务 agent 名)
-✅ `azd deploy` 完成,无错
-✅ `invoke-hosted.ps1` / `invoke-hosted.sh` 返回业务 JSON
-✅ `sanity-check.ps1` / `sanity-check.sh` 全 ✅
+- `azd deploy research-agent` 完成无错。
+- hosted `/responses` 返回更新后的业务 JSON。
+- `sanity-check.*` 全部关键项通过。
+- Lab 4 前至少调用几次 hosted agent，让 Monitor metrics 有数据。
+- Copilot 能解释本次发布是否只是业务代码更新，还是也改变了 model、server-side tools 或资源配置。
 
-## 3.10 故障速查
+## 3.9 故障速查
 
 | 现象 | 处理 |
 |------|------|
-| `azd deploy` ACR push 慢 | 第一次推 base image;后续会复用 layer |
-| hosted 调用 401 | `az account get-access-token --resource https://ai.azure.com` 重拿;脚本会自动重试一次 |
-| 模型说找不到 instructions | `agent.manifest.yaml.instructions.file` 路径相对 manifest 自己;确认指向 `../../personas/<agent>.md` |
-| 旧版本 placeholder 还在 | 不影响调用,但碍眼;在 Foundry MCP 工具或 Portal 上手动删(讲师代办) |
-| `azd up` 失败 | 你跑错了:本工作坊只有 `azd deploy`,没有 infra |
-| `Insufficient quota` / `Capacity not available` | 共享模型 deployment 配额被占满;问 `.agents/skills/microsoft-foundry/quota/` 或联系讲师 |
+| `azd deploy` 提示变量缺失 | 回 Lab 1 §1.4 同步 azd env，尤其 `AZURE_AI_PROJECT_ID` |
+| ACR remote build 慢 | 首次构建慢，后续 layer 会复用 |
+| hosted 调用 401 | 检查 `FOUNDRY_API_KEY` 与 project endpoint |
+| hosted 调用 server error | 把错误 body 贴给 Copilot；先等 postdeploy RBAC 传播 1-2 分钟，必要时重跑 `azd deploy research-agent` |
+| instructions 找不到 | `agent.manifest.yaml.instructions.file` 路径相对 manifest 自身，默认应为 `../../personas/research-agent.md` |
+| quota / capacity 错误 | 共享 model deployment 被占满，稍后重试或联系讲师 |
 
-## 3.11 加分挑战
+## 3.10 加分挑战
 
-1. 把 `agent.manifest.yaml` 里的 `grounding_with_bing_search` 取消注释(讲师如果已在 project 上 connected Bing 资源)。
-2. 改 `agent.yaml.scale.minReplicas: 0` 体验冷启动(p95 跳到 5s+),再改回 1。
-3. 用 Foundry MCP / `azd ai agent update` 手动升级 instructions,看是否自动生成新版本(`version: 2`)。
+1. 在 `agent.manifest.yaml` 中启用讲师已配置好的 server-side tool（例如 Bing grounding）。
+2. 改 tool 的 mock/live 行为并重新部署，比较 hosted 输出差异。
+3. 用 Copilot 生成一版自带业务 agent，再把 `azure.yaml` 指向新 service 发布。
 
-> 更深入的部署 / 升级 / 版本管理流程见 `.agents/skills/microsoft-foundry/foundry-agent/deploy/deploy.md`。
-
-→ [Lab 4 · 本地可观测性](../Lab-4-observability/HANDBOOK.md)
+→ [Lab 4 · 本地可观测性](../Lab-4-observability/README.md)

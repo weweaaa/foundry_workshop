@@ -7,7 +7,7 @@ You are helping a workshop attendee build a **Microsoft Agent Framework (MAF)** 
 
 ## Workspace conventions
 
-This is `workshop/Lab-2-vibe-coding/` of the foundry workshop. The shared Foundry resources (account + project + model deployment + ACR) are already pre-deployed by the instructor in a separate repo. The learner only deploys **their own hosted agent** (named with a `STUDENT_SUFFIX`) into the shared project.
+This is `Lab-2-vibe-coding/` of the foundry workshop. The shared Foundry resources (account + project + model deployment + ACR) are already pre-deployed by the instructor in a separate repo. The learner only deploys **their own hosted agent** (named with a `STUDENT_SUFFIX`) into the shared project.
 
 The agent is structured into **Soul · Skills · Tools**:
 
@@ -48,7 +48,7 @@ When the learner asks "help me make my own agent", clone this skeleton, swap per
 ## Refuse to do
 
 - Add Application Insights / SWA / per-student RG — that was the old workshop. The new one is portal-free and uses Foundry tracing data plane API.
-- Re-create infra bicep — `workshop/Lab-2-vibe-coding/infra/` was removed; the shared Foundry is pre-deployed.
+- Re-create infra bicep — `Lab-2-vibe-coding/infra/` was removed; the shared Foundry is pre-deployed.
 
 ## When unsure
 
