@@ -55,14 +55,14 @@ jq --version         # bash 脚本需要；macOS: brew install jq；Ubuntu: apt-
 ## 0.4 Clone 仓库并填写 `.env`
 
 ```powershell
-git clone https://github.com/haxudev/foundry_workshop.git
+git clone https://github.com/ITD-NextDimension/foundry_workshop.git
 cd foundry_workshop
 Copy-Item .env.example .env
 notepad .env
 ```
 
 ```bash
-git clone https://github.com/haxudev/foundry_workshop.git
+git clone https://github.com/ITD-NextDimension/foundry_workshop.git
 cd foundry_workshop
 cp .env.example .env
 ${EDITOR:-nano} .env

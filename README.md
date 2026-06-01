@@ -27,7 +27,7 @@
 **Windows（PowerShell）**
 
 ```powershell
-git clone https://github.com/haxudev/foundry_workshop.git
+git clone https://github.com/ITD-NextDimension/foundry_workshop.git
 cd foundry_workshop
 
 Copy-Item .env.example .env
@@ -39,7 +39,7 @@ code Lab-0-setup\README.md
 **macOS / Linux（bash）**
 
 ```bash
-git clone https://github.com/haxudev/foundry_workshop.git
+git clone https://github.com/ITD-NextDimension/foundry_workshop.git
 cd foundry_workshop
 
 cp .env.example .env
