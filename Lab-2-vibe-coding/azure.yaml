@@ -30,5 +30,7 @@ hooks:
             shell: pwsh
             run: ./hooks/postdeploy-grant-roles.ps1
         posix:
+            name: postdeploy
+            kind: pwsh
             shell: pwsh
             run: ./hooks/postdeploy-grant-roles.ps1
