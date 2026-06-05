@@ -1,5 +1,5 @@
 agent:
-  name: research-agent
+  name: research-agent-${STUDENT_SUFFIX}
   description: 市场/竞品研究助手 — web search + fetch + 结构化报告。
 
   instructions:

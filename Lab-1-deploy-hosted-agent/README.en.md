@@ -14,7 +14,7 @@
 Treat Lab 1 as an auditable release, not a sequence of `azd` commands. First ask Copilot to read the deployment entrypoints and explain what it will verify:
 
 ```text
-@workspace I am working on Lab 1. Read #file:Lab-2-vibe-coding/azure.yaml, #file:Lab-2-vibe-coding/src/research_agent/agent.yaml, #file:Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml, and #file:Lab-2-vibe-coding/hooks/postdeploy-grant-roles.ps1.
+@workspace I am working on Lab 1. Read #file:Lab-2-vibe-coding/azure.yaml, #file:Lab-2-vibe-coding/src/research_agent/agent.yaml.tpl, #file:Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml.tpl, and #file:Lab-2-vibe-coding/hooks/postdeploy-grant-roles.ps1.
 First explain what deployment will do, why I must not run azd up, and what the completion signal is.
 ```
 
@@ -27,7 +27,7 @@ First explain what deployment will do, why I must not run azd up, and what the c
 | Task | VS Code path (main) | Copilot TUI path (optional) |
 |------|---------------------|-----------------------------|
 | Explain `azure.yaml` | `@workspace Explain #file:azure.yaml services.research-agent` | Run `copilot`, paste the relevant `azure.yaml` snippet, and ask the same question |
-| Understand deployment metadata | `#file:src/research_agent/agent.yaml #file:src/research_agent/agent.manifest.yaml explain the difference` | Paste the relevant content from both yaml files and ask TUI chat to compare responsibilities |
+| Understand deployment metadata | `#file:src/research_agent/agent.yaml.tpl #file:src/research_agent/agent.manifest.yaml.tpl explain the difference` | Paste the relevant content from both yaml templates and ask TUI chat to compare responsibilities |
 | Troubleshoot deployment failure | Paste the `azd deploy` error and ask it to analyze only this workshop path | Paste the error output and ask TUI chat to troubleshoot only within this workshop's constraints |
 
 ## 1.4 Initialize azd env and Sync Variables
@@ -98,6 +98,7 @@ Key points:
 
 - `remoteBuild: true` means ACR remote build creates the image; students do not need local Docker.
 - There is no `infra:` because shared Foundry and ACR have already been created by the instructor.
+- `hooks.prepackage` renders local `agent.yaml` / `agent.manifest.yaml` from the `.tpl` templates using `STUDENT_SUFFIX`.
 - `hooks.postdeploy` grants `AcrPull` and `Azure AI User` to the managed identities that Foundry creates for this agent version.
 
 ## 1.6 Deploy

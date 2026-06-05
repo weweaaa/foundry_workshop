@@ -4,7 +4,7 @@ In Lab 2, you debugged `src/research_agent/` locally, or created your own busine
 
 ## 3.1 Goals
 
-- Understand the responsibilities of `agent.yaml` and `agent.manifest.yaml`.
+- Understand the responsibilities of `agent.yaml.tpl` and `agent.manifest.yaml.tpl`.
 - Confirm `azure.yaml` points to the agent you want to publish.
 - Incrementally publish with `azd deploy research-agent`.
 - Verify business output through the hosted endpoint.
@@ -14,7 +14,7 @@ In Lab 2, you debugged `src/research_agent/` locally, or created your own busine
 The point of Lab 3 is not “run deploy again”; it is safely publishing the local artifact from Lab 2 to the hosted slot. First ask Copilot for a read-only release review:
 
 ```text
-@workspace I am working on Lab 3. Read #file:Lab-2-vibe-coding/azure.yaml, #file:Lab-2-vibe-coding/src/research_agent/agent.yaml, #file:Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml, #file:Lab-2-vibe-coding/src/research_agent/main.py, and #file:Lab-2-vibe-coding/personas/research-agent.md.
+@workspace I am working on Lab 3. Read #file:Lab-2-vibe-coding/azure.yaml, #file:Lab-2-vibe-coding/src/research_agent/agent.yaml.tpl, #file:Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml.tpl, #file:Lab-2-vibe-coding/src/research_agent/main.py, and #file:Lab-2-vibe-coding/personas/research-agent.md.
 Check the release path from local artifact to hosted agent. List 5 things that must be confirmed before deployment; do not modify files.
 ```
 
@@ -26,8 +26,8 @@ Check the release path from local artifact to hosted agent. List 5 things that m
 
 | File | What it solves | Key fields |
 |------|----------------|-----------|
-| `src/research_agent/agent.yaml` | How Foundry hosts the container | `kind: hosted`, `protocols`, `resources`, `environment_variables` |
-| `src/research_agent/agent.manifest.yaml` | Which model and server-side tools the agent uses at runtime | `model`, `instructions.file`, `tools` |
+| `src/research_agent/agent.yaml.tpl` | How Foundry hosts the container; rendered to `agent.yaml` before deployment | `kind: hosted`, `protocols`, `resources`, `environment_variables` |
+| `src/research_agent/agent.manifest.yaml.tpl` | Which model and server-side tools the agent uses at runtime; rendered to `agent.manifest.yaml` before deployment | `model`, `instructions.file`, `tools` |
 | `azure.yaml` | How azd builds and publishes the service | `host: azure.ai.agent`, `docker.remoteBuild: true`, postdeploy hook |
 
 The default `research-agent` is already configured. For your own business agent, use Copilot `/deploy` to generate the two YAML files for the new directory, then point `azure.yaml.services` to the new service.
@@ -37,13 +37,13 @@ The default `research-agent` is already configured. For your own business agent,
 VS Code:
 
 ```text
-@workspace Check whether #file:azure.yaml #file:src/research_agent/agent.yaml #file:src/research_agent/agent.manifest.yaml are suitable for deployment to the shared Foundry project; do not create infra and do not use local Docker build.
+@workspace Check whether #file:azure.yaml #file:src/research_agent/agent.yaml.tpl #file:src/research_agent/agent.manifest.yaml.tpl are suitable for deployment to the shared Foundry project; do not create infra and do not use local Docker build.
 ```
 
 Copilot TUI (optional): start `copilot`, enter chat, then paste:
 
 ```text
-Check Lab-2-vibe-coding azure.yaml, src/research_agent/agent.yaml, and src/research_agent/agent.manifest.yaml.
+Check Lab-2-vibe-coding azure.yaml, src/research_agent/agent.yaml.tpl, and src/research_agent/agent.manifest.yaml.tpl.
 Requirements: host=azure.ai.agent, docker.remoteBuild=true, model uses ${AZURE_AI_MODEL_DEPLOYMENT_NAME}, no infra.
 ```
 

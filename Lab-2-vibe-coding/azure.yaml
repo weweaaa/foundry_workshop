@@ -34,3 +34,14 @@ hooks:
             kind: pwsh
             shell: pwsh
             run: ./hooks/postdeploy-grant-roles.ps1
+    prepackage:
+        windows:
+            name: prepackage-render-agent-yaml
+            kind: pwsh
+            shell: pwsh
+            run: ./hooks/render-agent-yaml.ps1
+        posix:
+            name: prepackage-render-agent-yaml
+            kind: pwsh
+            shell: pwsh
+            run: ./hooks/render-agent-yaml.ps1

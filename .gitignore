@@ -49,3 +49,8 @@ credentials/
 tmp/
 
 backup/
+
+# Generated from .tpl by Lab-2-vibe-coding/hooks/render-agent-yaml.ps1
+# (templates with ${STUDENT_SUFFIX} placeholder are checked in as .tpl)
+Lab-2-vibe-coding/src/research_agent/agent.yaml
+Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml

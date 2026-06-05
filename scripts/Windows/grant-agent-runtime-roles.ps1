@@ -232,3 +232,6 @@ if ($script:hadFailure) {
     exit 2
 }
 Write-Ok "All runtime roles granted. Agent runtime should now be reachable."
+# Explicit success: `azd env get-value` calls in Resolve-Var can leave $LASTEXITCODE=1
+# for missing keys, which would otherwise propagate to the azd hook runner.
+exit 0

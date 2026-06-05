@@ -14,7 +14,7 @@
 把 Lab 1 當成一次可審計的發布，而不是一串 `azd` 命令。先讓 Copilot 讀部署入口並解釋它將驗證什麼：
 
 ```text
-@workspace 我正在做 Lab 1。請閱讀 #file:Lab-2-vibe-coding/azure.yaml、#file:Lab-2-vibe-coding/src/research_agent/agent.yaml、#file:Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml 和 #file:Lab-2-vibe-coding/hooks/postdeploy-grant-roles.ps1。
+@workspace 我正在做 Lab 1。請閱讀 #file:Lab-2-vibe-coding/azure.yaml、#file:Lab-2-vibe-coding/src/research_agent/agent.yaml.tpl、#file:Lab-2-vibe-coding/src/research_agent/agent.manifest.yaml.tpl 和 #file:Lab-2-vibe-coding/hooks/postdeploy-grant-roles.ps1。
 請先解釋部署會做什麼、為什麼不能執行 azd up，以及部署後的完成信號。
 ```
 
@@ -27,7 +27,7 @@
 | 任務 | VS Code 走法（主路徑） | Copilot TUI 走法（可選） |
 |------|--------------|------------------|
 | 解釋 `azure.yaml` | `@workspace 解釋 #file:azure.yaml 的 services.research-agent` | 執行 `copilot` 進入 chat，貼上 `azure.yaml` 相關片段並問同樣問題 |
-| 看懂部署 metadata | `#file:src/research_agent/agent.yaml #file:src/research_agent/agent.manifest.yaml explain the difference` | 貼上兩個 yaml 的相關內容，讓 TUI chat 對比分工 |
+| 看懂部署 metadata | `#file:src/research_agent/agent.yaml.tpl #file:src/research_agent/agent.manifest.yaml.tpl explain the difference` | 貼上兩個 yaml 模板的相關內容，讓 TUI chat 對比分工 |
 | 部署失敗排查 | 貼上 `azd deploy` 錯誤並要求只分析本 workshop 路徑 | 貼上錯誤輸出，讓 TUI chat 只圍繞本 workshop 約束排查 |
 
 ## 1.4 初始化 azd env 並同步變數
@@ -98,6 +98,7 @@ services:
 
 - `remoteBuild: true` 表示映像由 ACR remote build 完成，不要求學員本機安裝 Docker。
 - 沒有 `infra:`，因為共享 Foundry / ACR 已由講師建立。
+- `hooks.prepackage` 會用 `STUDENT_SUFFIX` 從 `.tpl` 模板渲染出本機 `agent.yaml` / `agent.manifest.yaml`。
 - `hooks.postdeploy` 會自動給 Foundry 為該 agent 版本建立的 managed identities 授 `AcrPull` 和 `Azure AI User`。
 
 ## 1.6 部署

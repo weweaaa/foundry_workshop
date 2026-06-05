@@ -78,8 +78,8 @@ Lab-2-vibe-coding/
 │   └── report_builder.py
 ├── src/research_agent/
 │   ├── main.py
-│   ├── agent.yaml
-│   ├── agent.manifest.yaml
+│   ├── agent.yaml.tpl
+│   ├── agent.manifest.yaml.tpl
 │   ├── Dockerfile
 │   └── requirements.txt
 ├── tests/unit/

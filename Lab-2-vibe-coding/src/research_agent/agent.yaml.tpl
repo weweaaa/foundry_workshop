@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/ContainerAgent.yaml
 kind: hosted
-name: research-agent
+name: research-agent-${STUDENT_SUFFIX}
 description: 市场/竞品研究助手 — web search + fetch + 结构化报告。
 protocols:
   - protocol: responses
