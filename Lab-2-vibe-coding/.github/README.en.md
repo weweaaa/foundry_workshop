@@ -6,7 +6,7 @@
 
 When VS Code Copilot Chat opens a workspace, it reads these files from the workspace root:
 
-- `.github/chatmodes/*.chatmode.md` — custom chat modes (switch from the top dropdown)
+- `.github/agents/*.agent.md` (this workshop currently uses `*.chatmode.md` filenames) — custom agent modes (switch from the top dropdown)
 - `.github/instructions/*.instructions.md` — injected into Copilot context based on `applyTo` globs
 - `.github/prompts/*.prompt.md` — `/<slug>` slash commands
 
@@ -16,7 +16,7 @@ In Lab 0, students `cd` into `Lab-2-vibe-coding` and run `code .`; all files in 
 
 | File | Type | Trigger |
 |------|------|---------|
-| `chatmodes/maf-agent.chatmode.md` | chatmode | Select "maf-agent" from the Copilot Chat dropdown |
+| `agents/maf-agent.chatmode.md` | agent mode | Select "maf-agent" from the Copilot Chat dropdown |
 | `instructions/maf-tools.instructions.md` | instructions | Auto-injected while editing `tools/**/*.py` |
 | `instructions/maf-personas.instructions.md` | instructions | Auto-injected while editing `personas/**/*.md` |
 | `instructions/maf-skills.instructions.md` | instructions | Auto-injected while editing `skills/**/SKILL.md` |
@@ -27,7 +27,7 @@ In Lab 0, students `cd` into `Lab-2-vibe-coding` and run `code .`; all files in 
 
 ## Enable VS Code Settings (if not already enabled)
 
-VS Code 1.95+ enables chatmodes/prompts/instructions by default. If you do not see them, run:
+VS Code 1.95+ enables agents/prompts/instructions by default. If you do not see them, run:
 
 **Windows (PowerShell)**
 
@@ -51,6 +51,6 @@ The script will:
 
 To adapt the skills to your own business domain:
 
-- Replace the "Default scenario" at the top of `chatmodes/maf-agent.chatmode.md`.
+- Replace the "Default scenario" at the top of `agents/maf-agent.chatmode.md`.
 - Usually keep `instructions/*` unchanged; they are the convention layer.
 - Update `prompts/*.prompt.md` input fields and examples.

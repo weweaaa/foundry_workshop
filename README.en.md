@@ -76,7 +76,7 @@ foundry_workshop/
 │   ├── tools/
 │   ├── src/research_agent/
 │   ├── tests/unit/
-│   └── .github/                    # Copilot chatmodes / instructions / prompts
+│   └── .github/                    # Copilot agents / instructions / prompts
 ├── Lab-3-update-hosted-agent/      # Redeploy local changes to the hosted agent
 └── Lab-4-observability/            # Local HTML + Azure Monitor metrics
 ```
@@ -126,11 +126,11 @@ The default scenario is a market and competitive research assistant. To move fas
 
 ## Copilot Environments
 
-The classroom main path is **VS Code GitHub Copilot**. It automatically reads the `Lab-2-vibe-coding/.github/` chatmode, instructions, and prompts. The terminal `copilot` TUI is only an optional fallback for students who cannot use VS Code Chat. Do not turn it into an old command-suggestion/explanation workflow.
+The classroom main path is **VS Code GitHub Copilot**. It automatically reads the `Lab-2-vibe-coding/.github/` agents, instructions, and prompts. The terminal `copilot` TUI is only an optional fallback for students who cannot use VS Code Chat. Do not turn it into an old command-suggestion/explanation workflow.
 
 | Environment | Entry | Best for |
 |-------------|-------|----------|
-| VS Code Copilot Chat (recommended) | After Lab 0 installs customization, open `Lab-2-vibe-coding/`, select the `maf-agent` chatmode, and use `/persona`, `/skill`, `/tool`, `/deploy` | Multi-file generation and edits |
+| VS Code Copilot Chat (recommended) | After Lab 0 installs customization, open `Lab-2-vibe-coding/`, select the `maf-agent` agent mode, and use `/persona`, `/skill`, `/tool`, `/deploy` | Multi-file generation and edits |
 | Copilot TUI (optional) | Run `copilot` in the terminal, enter chat, and paste the lab prompt or template content | Fallback conversation path when VS Code Chat is unavailable |
 
 Both environments can use the official skills under the repository root `.agents/skills/`:

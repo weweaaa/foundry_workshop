@@ -76,7 +76,7 @@ foundry_workshop/
 │   ├── tools/
 │   ├── src/research_agent/
 │   ├── tests/unit/
-│   └── .github/                    # Copilot chatmodes / instructions / prompts
+│   └── .github/                    # Copilot agents / instructions / prompts
 ├── Lab-3-update-hosted-agent/      # 本地修改后重新发布 hosted agent
 └── Lab-4-observability/            # 本地 HTML + Azure Monitor metrics
 ```
@@ -126,11 +126,11 @@ L1 共享基础设施  Foundry account / project / 模型 / ACR       ← 学员
 
 ## Copilot 双环境
 
-现场主路径是 **VS Code GitHub Copilot**：它能自动读取 `Lab-2-vibe-coding/.github/` 里的 chatmode、instructions 和 prompts。终端里的 `copilot` TUI 只作为可选兜底，适合没有 VS Code Chat 的学员；不要把它写成旧的命令建议/解释工作流。
+现场主路径是 **VS Code GitHub Copilot**：它能自动读取 `Lab-2-vibe-coding/.github/` 里的 agents、instructions 和 prompts。终端里的 `copilot` TUI 只作为可选兜底，适合没有 VS Code Chat 的学员；不要把它写成旧的命令建议/解释工作流。
 
 | 环境 | 入口 | 适合 |
 |------|------|------|
-| VS Code Copilot Chat（推荐） | Lab 0 安装 customization 后，打开 `Lab-2-vibe-coding/`，选择 `maf-agent` chatmode，使用 `/persona` `/skill` `/tool` `/deploy` | 生成/修改多文件 |
+| VS Code Copilot Chat（推荐） | Lab 0 安装 customization 后，打开 `Lab-2-vibe-coding/`，选择 `maf-agent` agent mode，使用 `/persona` `/skill` `/tool` `/deploy` | 生成/修改多文件 |
 | Copilot TUI（可选） | 终端运行 `copilot`，进入 chat 后粘贴本 Lab 给出的 prompt 或模板内容 | 不能使用 VS Code Chat 时的兜底对话路径 |
 
 两种环境都可以参考仓库根 `.agents/skills/` 下的官方 skill：
